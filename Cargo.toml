@@ -1,6 +1,7 @@
 [package]
 name = "mvdparser"
 description = "Extract information from QuakeWorld MVD demos."
+categories = ["parsing"]
 keywords = ["demos", "mvd", "parser", "quake", "quakeworld"]
 repository = "https://github.com/vikpe/mvdparser"
 authors = ["Viktor Persson <viktor.persson@arcsin.se>"]
