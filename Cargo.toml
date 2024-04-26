@@ -9,9 +9,7 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 include = [
-    "/benches/**",
     "/Cargo.toml",
-    "/LICENSE",
     "/README.md",
     "/src/**",
 ]
