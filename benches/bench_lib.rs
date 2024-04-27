@@ -10,7 +10,8 @@ fn lib_benchmark(c: &mut Criterion) {
     let data = get_demo_data();
     let mut group = c.benchmark_group("lib");
     group.throughput(Throughput::Bytes(data.len() as u64));
-    group.bench_function("matchdate", |b| b.iter(|| mvdparser::matchdate(&data)));    
+    group.bench_function("matchdate", |b| b.iter(|| mvdparser::matchdate(&data)));
+    group.bench_function("serverinfo", |b| b.iter(|| mvdparser::serverinfo(&data)));
     group.finish();
 }
 
