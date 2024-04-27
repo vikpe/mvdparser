@@ -2,21 +2,17 @@ use std::str::from_utf8;
 
 use bstr::ByteSlice;
 
-const JSON_NEEDLE: &[u8; 12] = br#"{"version": "#;
-const FRAME_DELIMITER: &[u8; 4] = b"\x00\x03\x00\x00";
+use crate::frame;
 
-mod frame_info {
-    pub const LENGTH: usize = 18;
-    pub const LENGTH_INDEX: usize = 10;
-}
+const JSON_NEEDLE: &[u8; 12] = br#"{"version": "#;
 
 pub fn ktxstats(data: &[u8]) -> Option<String> {
-    let mut offset = data.rfind(JSON_NEEDLE)? - frame_info::LENGTH;
+    let mut offset = data.rfind(JSON_NEEDLE)? - frame::info::LENGTH;
     let mut content = Vec::new();
 
-    while &data[offset..offset + FRAME_DELIMITER.len()] == FRAME_DELIMITER {
-        let index_from = offset + frame_info::LENGTH;
-        let index_to = index_from + get_frame_length(data, offset);
+    while &data[offset..offset + frame::DELIMITER.len()] == frame::DELIMITER {
+        let index_from = offset + frame::info::LENGTH;
+        let index_to = index_from + frame::length(data, offset);
         content.extend_from_slice(&data[index_from..index_to]);
         offset = index_to;
     }
@@ -25,11 +21,6 @@ pub fn ktxstats(data: &[u8]) -> Option<String> {
         Ok(str) => Some(str.to_string()),
         Err(_) => None,
     }
-}
-
-fn get_frame_length(data: &[u8], offset: usize) -> usize {
-    let index = offset + frame_info::LENGTH_INDEX;
-    u16::from_le_bytes([data[index], data[index + 1]]) as usize - 2
 }
 
 #[cfg(test)]
