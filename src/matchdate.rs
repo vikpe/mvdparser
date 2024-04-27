@@ -5,9 +5,8 @@ const MIN_LEN: usize = "yyyy-mm-dd hh:mm:ss ab".len();
 const MAX_LEN: usize = "yyyy-mm-dd hh:mm:ss abcde".len();
 
 pub fn matchdate(data: &[u8]) -> Option<String> {
-    let needle_index = data.find(NEEDLE)?;
-    let index_from = needle_index + NEEDLE.len();
-    let index_to = data[needle_index..].find_byte(b'\n')?;
+    let index_from = data.find(NEEDLE)? + NEEDLE.len();
+    let index_to = index_from + data[index_from..].find_byte(b'\n')?;
     let length = index_to - index_from;
 
     if !(MIN_LEN..=MAX_LEN).contains(&length) {
