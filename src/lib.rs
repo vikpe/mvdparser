@@ -6,3 +6,4 @@ mod frame;
 mod ktxstats;
 mod matchdate;
 mod serverinfo;
+mod timezone;

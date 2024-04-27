@@ -1,7 +1,6 @@
+use crate::timezone;
 use bstr::ByteSlice;
 use chrono::{DateTime, Utc};
-
-mod timezone;
 
 const NEEDLE: &[u8; 11] = b"matchdate: ";
 const DATETIME_LEN: usize = "yyyy-mm-dd hh:mm:ss".len();
