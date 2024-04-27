@@ -2,8 +2,10 @@ use std::fs;
 
 use criterion::{criterion_group, criterion_main, Criterion, Throughput};
 
+// get .mvd files from
+// https://github.com/vikpe/mvdparser/tree/main/tests/files
 fn get_demo_data() -> Vec<u8> {
-    fs::read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd").expect("unable to read file")
+    fs::read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd").expect("unable to read demo")
 }
 
 fn lib_benchmark(c: &mut Criterion) {

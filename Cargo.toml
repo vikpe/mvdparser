@@ -11,7 +11,9 @@ license = "MIT"
 include = [
     "/Cargo.toml",
     "/README.md",
+    "/benches/**",
     "/src/**",
+    "/tests/files/*.json",
 ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
