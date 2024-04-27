@@ -21,6 +21,7 @@ include = [
 [dependencies]
 anyhow = "1.0.82"
 bstr = "1.9.1"
+chrono = { version = "0.4.38", default-features = false }
 
 [dev-dependencies]
 criterion = { version = "0.5.1", default-features = false }
