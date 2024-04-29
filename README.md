@@ -4,24 +4,32 @@
 
 ## Functions
 
-## ktxstats
+### ktxstats
 
-```
-mvdparser::ktxstats(&demo_path) -> Option<String>
+```rust
+mvdparser::ktxstats(&demo_path) // Option<String>
 ```
 
-## matchdate
+### matchdate
 
-```
-mvdparser::matchdate(&demo_path) -> Option<DateTime<Utc>>
-mvdparser::matchdate_string(&demo_path) -> Option<String>
+```rust
+mvdparser::matchdate(&demo_path)        // Option<DateTime<Utc>>
+mvdparser::matchdate_string(&demo_path) // Option<String>
 ```
 
 ### serverinfo
 
 See crate [quake_serverinfo](https://github.com/vikpe/quake_serverinfo) for `Serverinfo` definition.
 
+```rust
+mvdparser::serverinfo(&demo_path)        // Option<Serverinfo>
+mvdparser::serverinfo_string(&demo_path) // Option<String>
 ```
-mvdparser::serverinfo(&demo_path) -> Option<Serverinfo>
-mvdparser::serverinfo_string(&demo_path) -> Option<String>
+
+### timestamp
+
+Gets timestamp from epoch (preferred, found in serverinfo) _or_ matchdate.
+
+```rust
+mvdparser::timestamp(&demo_path) // Option<DateTime<Utc>>
 ```

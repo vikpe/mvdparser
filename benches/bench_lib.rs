@@ -23,6 +23,9 @@ fn lib_benchmark(c: &mut Criterion) {
     group.bench_function("serverinfo_string", |b| {
         b.iter(|| mvdparser::serverinfo_string(&data))
     });
+
+    group.bench_function("timestamp", |b| b.iter(|| mvdparser::timestamp(&data)));
+
     group.finish();
 }
 
