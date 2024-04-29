@@ -17,7 +17,7 @@ pub fn matchdate(data: &[u8]) -> Option<DateTime<Utc>> {
     }
 }
 
-pub fn replace_tz_abbr_with_offset(timestamp: &str) -> Option<String> {
+fn replace_tz_abbr_with_offset(timestamp: &str) -> Option<String> {
     let tz_abbr = &timestamp[DATETIME_LEN + 1..];
     let tz_offset = timezone::utc_offset(tz_abbr)?;
     Some(format!("{}{}", &timestamp[..DATETIME_LEN], tz_offset))

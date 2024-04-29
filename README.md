@@ -10,13 +10,6 @@
 mvdparser::ktxstats(&demo_path) // Option<String>
 ```
 
-### matchdate
-
-```rust
-mvdparser::matchdate(&demo_path)        // Option<DateTime<Utc>>
-mvdparser::matchdate_string(&demo_path) // Option<String>
-```
-
 ### serverinfo
 
 See crate [quake_serverinfo](https://github.com/vikpe/quake_serverinfo) for `Serverinfo` definition.
@@ -28,7 +21,7 @@ mvdparser::serverinfo_string(&demo_path) // Option<String>
 
 ### timestamp
 
-Gets timestamp from epoch (preferred, found in serverinfo) _or_ matchdate.
+Gets timestamp - from `epoch` (preferred, found in serverinfo) _or_ from `matchdate`.
 
 ```rust
 mvdparser::timestamp(&demo_path) // Option<DateTime<Utc>>

@@ -1,9 +1,10 @@
 use chrono::{DateTime, LocalResult, TimeZone, Utc};
 
-use crate::{matchdate, serverinfo};
+use crate::matchdate::matchdate;
+use crate::serverinfo;
 
 pub fn timestamp(data: &[u8]) -> Option<DateTime<Utc>> {
-    timestamp_from_epoch(data).or(matchdate(data))
+    timestamp_from_epoch(data).or_else(|| matchdate(data))
 }
 
 fn timestamp_from_epoch(data: &[u8]) -> Option<DateTime<Utc>> {
