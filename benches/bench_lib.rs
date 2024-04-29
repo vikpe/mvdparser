@@ -13,11 +13,16 @@ fn lib_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("lib");
     group.throughput(Throughput::Bytes(data.len() as u64));
     group.bench_function("ktxstats", |b| b.iter(|| mvdparser::ktxstats(&data)));
+
     group.bench_function("matchdate", |b| b.iter(|| mvdparser::matchdate(&data)));
     group.bench_function("matchdate_string", |b| {
         b.iter(|| mvdparser::matchdate_string(&data))
     });
+
     group.bench_function("serverinfo", |b| b.iter(|| mvdparser::serverinfo(&data)));
+    group.bench_function("serverinfo_string", |b| {
+        b.iter(|| mvdparser::serverinfo_string(&data))
+    });
     group.finish();
 }
 
