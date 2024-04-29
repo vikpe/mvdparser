@@ -9,7 +9,7 @@ const MIN_LEN: usize = "yyyy-mm-dd hh:mm:ss ab".len();
 const MAX_LEN: usize = "yyyy-mm-dd hh:mm:ss abcde".len();
 
 pub fn matchdate(data: &[u8]) -> Option<DateTime<Utc>> {
-    let matchdate_str = replace_tz_abbr_with_offset(&matchdate_str(data)?)?;
+    let matchdate_str = replace_tz_abbr_with_offset(&matchdate_string(data)?)?;
 
     match DateTime::parse_from_str(&matchdate_str, "%Y-%m-%d %H:%M:%S%z") {
         Ok(dt) => Some(dt.to_utc()),
@@ -23,7 +23,7 @@ pub fn replace_tz_abbr_with_offset(timestamp: &str) -> Option<String> {
     Some(format!("{}{}", &timestamp[..DATETIME_LEN], tz_offset))
 }
 
-pub fn matchdate_str(data: &[u8]) -> Option<String> {
+pub fn matchdate_string(data: &[u8]) -> Option<String> {
     let index_from = data.find(NEEDLE)? + NEEDLE.len();
     let index_to = index_from + data[index_from..].find_byte(b'\n')?;
     let length = index_to - index_from;
@@ -82,34 +82,34 @@ mod tests {
     }
 
     #[test]
-    fn test_matchdate_str() -> Result<()> {
+    fn test_matchdate_string() -> Result<()> {
         // invalid
-        assert_eq!(matchdate_str(b""), None);
-        assert_eq!(matchdate_str(b"foo"), None);
-        assert_eq!(matchdate_str(b"matchdate: foo"), None);
-        assert_eq!(matchdate_str(b"matchdate: 2024"), None);
-        assert_eq!(matchdate_str(b"matchdate: 2024-04-02 21:02:17\n"), None);
+        assert_eq!(matchdate_string(b""), None);
+        assert_eq!(matchdate_string(b"foo"), None);
+        assert_eq!(matchdate_string(b"matchdate: foo"), None);
+        assert_eq!(matchdate_string(b"matchdate: 2024"), None);
+        assert_eq!(matchdate_string(b"matchdate: 2024-04-02 21:02:17\n"), None);
         assert_eq!(
-            matchdate_str(b"matchdate: 2024-04-02 21:02:17 FOOBAR\n"),
+            matchdate_string(b"matchdate: 2024-04-02 21:02:17 FOOBAR\n"),
             None
         );
 
         // valid
         assert_eq!(
-            matchdate_str(b"matchdate: 2024-04-02 21:02:17 CEST\n"),
+            matchdate_string(b"matchdate: 2024-04-02 21:02:17 CEST\n"),
             Some("2024-04-02 21:02:17 CEST".to_string())
         );
 
         // files
         assert_eq!(
-            matchdate_str(&std::fs::read(
+            matchdate_string(&std::fs::read(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd"
             )?),
             Some("2024-04-26 16:59:29 CEST".to_string())
         );
 
         assert_eq!(
-            matchdate_str(&std::fs::read(
+            matchdate_string(&std::fs::read(
                 "tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd"
             )?),
             Some("2024-04-26 17:16:13 CEST".to_string())
