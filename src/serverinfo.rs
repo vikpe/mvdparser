@@ -15,6 +15,8 @@ pub fn serverinfo_string(data: &[u8]) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::read;
+
     use anyhow::Result;
     use pretty_assertions::assert_eq;
 
@@ -22,7 +24,7 @@ mod tests {
 
     #[test]
     fn test_serverinfo() -> Result<()> {
-        let data = std::fs::read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
+        let data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
 
         let expected = Serverinfo {
             admin: Some("suom1 <suom1@irc.ax>".to_string()),
@@ -60,19 +62,24 @@ mod tests {
 
     #[test]
     fn test_serverinfo_string() -> Result<()> {
-        let data = std::fs::read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
         assert_eq!(
-            serverinfo_string(&data),
+            serverinfo_string(&read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?),
             Some(
                 r#"\maxfps\77\pm_ktjump\1\*version\MVDSV 0.36\*z_ext\511\*admin\suom1 <suom1@irc.ax>\ktxver\1.42\sv_antilag\2\maxspectators\12\*gamedir\qw\timelimit\10\deathmatch\3\mode\1on1\hostname\QUAKE.SE KTX:28501\fpd\142\*qvm\so\*progs\so\maxclients\2\map\bravado\status\Countdown\serverdemo\duel_holy_vs_dago[bravado]20240426-1659.mvd"#.to_string()
             )
         );
 
-        let data = std::fs::read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
         assert_eq!(
-            serverinfo_string(&data),
+            serverinfo_string(&read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?),
             Some(
                 r#"\maxfps\77\pm_ktjump\1\*version\MVDSV 0.36\*z_ext\511\*admin\suom1 <suom1@irc.ax>\ktxver\1.42\sv_antilag\2\maxspectators\12\teamplay\2\*gamedir\qw\maxclients\8\timelimit\20\deathmatch\1\mode\4on4\matchtag\tsq-axe lan\hostname\QUAKE.SE KTX:28502\fpd\142\*qvm\so\*progs\so\map\dm2\status\Countdown\serverdemo\4on4_oeks_vs_tsq[dm2]20240426-1716.mvd"#.to_string()
+            )
+        );
+
+        assert_eq!(
+            serverinfo_string(&read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?),
+            Some(
+                r#"\maxfps\77\pm_ktjump\1\*version\MVDSV 1.01-dev\*z_ext\511\maxspectators\12\*gamedir\qw\sv_antilag\2\*admin\ERRH @ https://discord.quake.world\ktxver\1.44-dev\mode\1on1\maxclients\2\timelimit\3\deathmatch\4\hostname\de.quake.world:27502 [QW-Group]\fpd\142\*qvm\so\*progs\so\map\povdmm4\status\Countdown\serverdemo\duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd\epoch\1713782300"#.to_string()
             )
         );
 
