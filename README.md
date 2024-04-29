@@ -14,7 +14,7 @@ mvdparser::ktxstats(&demo_path) -> Option<String>
 
 ```
 mvdparser::matchdate(&demo_path) -> Option<DateTime<Utc>>
-mvdparser::matchdate_str(&demo_path) -> Option<String>
+mvdparser::matchdate_string(&demo_path) -> Option<String>
 ```
 
 ### serverinfo
@@ -23,5 +23,5 @@ See crate [quake_serverinfo](https://github.com/vikpe/quake_serverinfo) for `Ser
 
 ```
 mvdparser::serverinfo(&demo_path) -> Option<Serverinfo>
-mvdparser::serverinfo_str(&demo_path) -> Option<String>
+mvdparser::serverinfo_string(&demo_path) -> Option<String>
 ```
