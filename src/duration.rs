@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bstr::ByteSlice;
 
-use crate::qw;
+use crate::{ktxstats, qw, util};
 
 const H_INFO_SIZE: usize = 6; // [time] [target/command] [size]
 const H_CMD_SIZE: usize = H_INFO_SIZE + 1; // [info] [cmd]
@@ -20,9 +20,20 @@ pub fn demo_duration(data: &[u8]) -> Option<Duration> {
 }
 
 pub fn match_duration(data: &[u8]) -> Option<Duration> {
+    match_duration_from_ktxstats(data).or_else(|| match_duration_from_seeking(data))
+}
+
+fn match_duration_from_seeking(data: &[u8]) -> Option<Duration> {
     let start = countdown_duration(data)?;
     let end = demo_duration(data)?;
     Some(end - start)
+}
+
+fn match_duration_from_ktxstats(data: &[u8]) -> Option<Duration> {
+    let ktxstats_s = ktxstats(data)?;
+    let (from, to) = util::offsets_between(ktxstats_s.as_bytes(), br#""duration": "#, b",")?;
+    let duration_f: f64 = ktxstats_s[from..to].parse().ok()?;
+    Some(Duration::from_secs_f64(duration_f))
 }
 
 fn duration_until_offset(data: &[u8], target_offset: usize) -> Duration {
@@ -139,23 +150,23 @@ mod tests {
     fn test_match_duration() -> Result<()> {
         assert_eq!(
             match_duration(&read("tests/files/ffa_5[dm4]20240501-1229.mvd")?),
-            Some(Duration::from_secs_f64(61.386998177)),
+            Some(Duration::from_secs(61)),
         );
         assert_eq!(
             match_duration(&read(
                 "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
             )?),
-            Some(Duration::from_secs_f64(180.013006211)),
+            Some(Duration::from_secs(180)),
         );
         assert_eq!(
             match_duration(&read(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd"
             )?),
-            Some(Duration::from_secs_f64(600.038982392)),
+            Some(Duration::from_secs(600)),
         );
         assert_eq!(
             match_duration(&read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?),
-            Some(Duration::from_secs_f64(1200.028967857)),
+            Some(Duration::from_secs(1200)),
         );
         assert_eq!(
             match_duration(&read(
