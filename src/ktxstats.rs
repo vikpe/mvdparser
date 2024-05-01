@@ -42,28 +42,24 @@ mod tests {
     #[test]
     fn test_ktxstats() -> Result<()> {
         {
-            let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
-            let stats_data = strip(&read_to_string(
+            let demo = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
+            let stats = strip(&read_to_string(
                 "tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd.ktxstats.json",
             )?);
-
-            assert_eq!(
-                ktxstats(&demo_data).map(|s| strip(&s)),
-                Some(strip(&stats_data))
-            );
+            assert_eq!(ktxstats(&demo).map(|s| strip(&s)), Some(strip(&stats)));
         }
-
         {
-            let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
-            let stats_data = strip(&read_to_string(
+            let demo = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
+            let stats = strip(&read_to_string(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd.ktxstats.json",
             )?);
-
-            assert_eq!(
-                ktxstats(&demo_data).map(|s| strip(&s)),
-                Some(strip(&stats_data))
-            );
+            assert_eq!(ktxstats(&demo).map(|s| strip(&s)), Some(strip(&stats)));
         }
+        {
+            let demo = read("tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd")?;
+            assert_eq!(ktxstats(&demo), None)
+        }
+
         Ok(())
     }
 }
