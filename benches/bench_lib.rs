@@ -14,6 +14,7 @@ fn lib_benchmark(c: &mut Criterion) {
     let data = get_demo_data();
     let mut group = c.benchmark_group("lib");
     group.throughput(Throughput::Bytes(data.len() as u64));
+
     group.bench_function("ktxstats", |b| b.iter(|| mvdparser::ktxstats(&data)));
 
     group.bench_function("matchdate", |b| b.iter(|| matchdate::matchdate(&data)));
@@ -27,6 +28,16 @@ fn lib_benchmark(c: &mut Criterion) {
     });
 
     group.bench_function("timestamp", |b| b.iter(|| mvdparser::timestamp(&data)));
+
+    group.bench_function("countdown_duration", |b| {
+        b.iter(|| mvdparser::countdown_duration(&data))
+    });
+    group.bench_function("demo_duration", |b| {
+        b.iter(|| mvdparser::demo_duration(&data))
+    });
+    group.bench_function("match_duration", |b| {
+        b.iter(|| mvdparser::match_duration(&data))
+    });
 
     group.finish();
 }
