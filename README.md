@@ -4,6 +4,14 @@
 
 ## Functions
 
+### duration
+
+```rust
+mvdparser::countdown_duration(&demo_path) // Option<Duration>
+mvdparser::match_duration(&demo_path) // Option<Duration>
+mvdparser::demo_duration(&demo_path) // Option<Duration>
+```
+
 ### ktxstats
 
 ```rust
