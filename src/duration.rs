@@ -4,8 +4,8 @@ use bstr::ByteSlice;
 
 use crate::qw;
 
-const FRAME_INFO_SIZE: usize = 6; // [time] [target/command] [size]
-const FRAME_HEADER_SIZE: usize = FRAME_INFO_SIZE + 1; // [header] [cmd]
+const H_INFO_SIZE: usize = 6; // [time] [target/command] [size]
+const H_CMD_SIZE: usize = H_INFO_SIZE + 1; // [info] [cmd]
 const N_MATCH_START: &[u8] = b"matchstart";
 const N_MATCH_END: &[u8] = b"Standby";
 
@@ -25,16 +25,16 @@ pub fn match_duration(data: &[u8]) -> Option<Duration> {
     Some(end - start)
 }
 
-fn duration_until_offset(data: &[u8], to_offset: usize) -> Duration {
+fn duration_until_offset(data: &[u8], target_offset: usize) -> Duration {
     let mut total_ms: u32 = 0;
     let mut offset = 0;
 
-    while (offset + FRAME_HEADER_SIZE) < data.len() {
+    while (offset + H_CMD_SIZE) < data.len() {
         // time [n]
         total_ms += data[offset] as u32;
 
         // check offset
-        if offset >= to_offset {
+        if offset >= target_offset {
             break;
         }
 
@@ -58,7 +58,7 @@ fn duration_until_offset(data: &[u8], to_offset: usize) -> Duration {
             _ => 0, // should not happen
         };
 
-        offset += FRAME_INFO_SIZE + frame_size as usize;
+        offset += H_INFO_SIZE + frame_size as usize;
     }
 
     Duration::from_secs_f32(total_ms as f32 / 1000.0)
