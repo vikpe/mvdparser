@@ -7,15 +7,15 @@
 ### duration
 
 ```rust
-mvdparser::countdown_duration(&demo_path) // Option<Duration>
-mvdparser::match_duration(&demo_path) // Option<Duration>
-mvdparser::demo_duration(&demo_path) // Option<Duration>
+mvdparser::countdown_duration(&data) // Option<Duration>
+mvdparser::match_duration(&data)     // Option<Duration>
+mvdparser::demo_duration(&data)      // Option<Duration>
 ```
 
 ### ktxstats
 
 ```rust
-mvdparser::ktxstats(&demo_path) // Option<String>
+mvdparser::ktxstats(&data) // Option<String>
 ```
 
 ### serverinfo
@@ -23,8 +23,8 @@ mvdparser::ktxstats(&demo_path) // Option<String>
 See crate [quake_serverinfo](https://github.com/vikpe/quake_serverinfo) for `Serverinfo` definition.
 
 ```rust
-mvdparser::serverinfo(&demo_path)        // Option<Serverinfo>
-mvdparser::serverinfo_string(&demo_path) // Option<String>
+mvdparser::serverinfo(&data)        // Option<Serverinfo>
+mvdparser::serverinfo_string(&data) // Option<String>
 ```
 
 ### timestamp
@@ -32,5 +32,5 @@ mvdparser::serverinfo_string(&demo_path) // Option<String>
 Gets timestamp - from `epoch` (preferred, found in serverinfo) _or_ from `matchdate`.
 
 ```rust
-mvdparser::timestamp(&demo_path) // Option<DateTime<Utc>>
+mvdparser::timestamp(&data) // Option<DateTime<Utc>>
 ```
