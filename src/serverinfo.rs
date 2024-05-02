@@ -1,16 +1,14 @@
-use bstr::ByteSlice;
 use quake_serverinfo::Serverinfo;
 
-const NEEDLE: &[u8; 16] = br#"fullserverinfo ""#;
+use crate::util;
 
 pub fn serverinfo(data: &[u8]) -> Option<Serverinfo> {
     serverinfo_string(data).map(|str| Serverinfo::from(str.as_str()))
 }
 
 pub fn serverinfo_string(data: &[u8]) -> Option<String> {
-    let index_from = data.find(NEEDLE)? + NEEDLE.len();
-    let index_to = index_from + data[index_from..].find_byte(b'"')?;
-    String::from_utf8(data[index_from..index_to].to_vec()).ok()
+    let (from, to) = util::offsets_between(data, br#"fullserverinfo ""#, br#"""#)?;
+    String::from_utf8(data[from..to].to_vec()).ok()
 }
 
 #[cfg(test)]
