@@ -4,7 +4,7 @@ use quake_serverinfo::Serverinfo;
 const NEEDLE: &[u8; 16] = br#"fullserverinfo ""#;
 
 pub fn serverinfo(data: &[u8]) -> Option<Serverinfo> {
-    serverinfo_string(data).map(|str| Serverinfo::from_str(&str))
+    serverinfo_string(data).map(|str| Serverinfo::from(str.as_str()))
 }
 
 pub fn serverinfo_string(data: &[u8]) -> Option<String> {
