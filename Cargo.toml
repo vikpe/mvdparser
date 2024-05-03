@@ -5,7 +5,7 @@ categories = ["parsing"]
 keywords = ["demos", "mvd", "parser", "quake", "quakeworld"]
 repository = "https://github.com/vikpe/mvdparser"
 authors = ["Viktor Persson <viktor.persson@arcsin.se>"]
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 license = "MIT"
 include = [
@@ -22,7 +22,9 @@ include = [
 anyhow = "1.0.82"
 bstr = "1.9.1"
 chrono = { version = "0.4.38", default-features = false }
+quake_clientinfo = "0.2.0"
 quake_serverinfo = "0.4.0"
+quake_text = "0.1.0"
 
 [dev-dependencies]
 criterion = { version = "0.5.1", default-features = false }

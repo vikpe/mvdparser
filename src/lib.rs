@@ -1,3 +1,4 @@
+pub use crate::clientinfo::clientinfo;
 pub use crate::duration::{countdown_duration, demo_duration, match_duration};
 pub use crate::ktxstats::ktxstats;
 pub use crate::serverinfo::{serverinfo, serverinfo_string};
