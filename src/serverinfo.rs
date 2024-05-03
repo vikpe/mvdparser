@@ -1,4 +1,4 @@
-use quake_serverinfo::Serverinfo;
+pub use quake_serverinfo::Serverinfo;
 
 use crate::util;
 
