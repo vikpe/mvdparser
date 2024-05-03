@@ -1,5 +1,5 @@
 use bstr::ByteSlice;
-pub use quake_clientinfo::Clientinfo;
+use quake_clientinfo::Clientinfo;
 
 pub fn clientinfo(data: &[u8]) -> Vec<Clientinfo> {
     clientinfo_strings(data)

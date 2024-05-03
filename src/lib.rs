@@ -1,3 +1,6 @@
+pub use quake_clientinfo::Clientinfo;
+pub use quake_serverinfo::Serverinfo;
+
 pub use crate::clientinfo::clientinfo;
 pub use crate::duration::{countdown_duration, demo_duration, match_duration};
 pub use crate::ktxstats::ktxstats;
