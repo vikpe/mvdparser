@@ -15,7 +15,7 @@ mvdparser::demo_duration(&data)      // Option<Duration>
 ### ktxstats
 
 ```rust
-mvdparser::ktxstats(&data) // Option<String>
+mvdparser::ktxstats_string(&data) // Option<String>
 ```
 
 ### serverinfo

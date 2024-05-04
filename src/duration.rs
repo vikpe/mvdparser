@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bstr::ByteSlice;
 
-use crate::{ktxstats, qw, util};
+use crate::{ktxstats_string, qw, util};
 
 const H_INFO_SIZE: usize = 6; // [time] [target/command] [size]
 const H_CMD_SIZE: usize = H_INFO_SIZE + 1; // [info] [cmd]
@@ -30,7 +30,7 @@ fn match_duration_from_seeking(data: &[u8]) -> Option<Duration> {
 }
 
 fn match_duration_from_ktxstats(data: &[u8]) -> Option<Duration> {
-    let ktxstats_s = ktxstats(data)?;
+    let ktxstats_s = ktxstats_string(data)?;
     let (from, to) = util::offsets_between(ktxstats_s.as_bytes(), br#""duration": "#, b",")?;
     let duration_f: f64 = ktxstats_s[from..to].parse().ok()?;
     Some(Duration::from_secs_f64(duration_f))

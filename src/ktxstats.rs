@@ -6,7 +6,7 @@ use crate::frame;
 
 const JSON_NEEDLE: &[u8; 12] = br#"{"version": "#;
 
-pub fn ktxstats(data: &[u8]) -> Option<String> {
+pub fn ktxstats_string(data: &[u8]) -> Option<String> {
     let mut offset = data.rfind(JSON_NEEDLE)? - frame::info::LENGTH;
     let mut content = Vec::new();
 
@@ -40,24 +40,30 @@ mod tests {
     }
 
     #[test]
-    fn test_ktxstats() -> Result<()> {
+    fn test_ktxstats_string() -> Result<()> {
         {
             let demo = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
             let stats = strip(&read_to_string(
                 "tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd.ktxstats.json",
             )?);
-            assert_eq!(ktxstats(&demo).map(|s| strip(&s)), Some(strip(&stats)));
+            assert_eq!(
+                ktxstats_string(&demo).map(|s| strip(&s)),
+                Some(strip(&stats))
+            );
         }
         {
             let demo = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
             let stats = strip(&read_to_string(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd.ktxstats.json",
             )?);
-            assert_eq!(ktxstats(&demo).map(|s| strip(&s)), Some(strip(&stats)));
+            assert_eq!(
+                ktxstats_string(&demo).map(|s| strip(&s)),
+                Some(strip(&stats))
+            );
         }
         {
             let demo = read("tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd")?;
-            assert_eq!(ktxstats(&demo), None)
+            assert_eq!(ktxstats_string(&demo), None)
         }
 
         Ok(())
