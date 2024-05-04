@@ -14,7 +14,10 @@ mvdparser::demo_duration(&data)      // Option<Duration>
 
 ### ktxstats
 
+See crate [ktxstats](https://github.com/vikpe/ktxstats) for `KtxstatsV3` definition.
+
 ```rust
+mvdparser::ktxstats_v3(&data)     // Option<KtxstatsV3>
 mvdparser::ktxstats_string(&data) // Option<String>
 ```
 

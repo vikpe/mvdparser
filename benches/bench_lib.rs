@@ -20,6 +20,7 @@ fn lib_benchmark(c: &mut Criterion) {
     group.bench_function("ktxstats_string", |b| {
         b.iter(|| mvdparser::ktxstats_string(&data))
     });
+    group.bench_function("ktxstats_v3", |b| b.iter(|| mvdparser::ktxstats_v3(&data)));
 
     group.bench_function("matchdate", |b| b.iter(|| matchdate::matchdate(&data)));
     group.bench_function("matchdate_string", |b| {
