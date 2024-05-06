@@ -7,7 +7,7 @@ pub fn serverinfo(data: &[u8]) -> Option<Serverinfo> {
 }
 
 pub fn serverinfo_string(data: &[u8]) -> Option<String> {
-    let (from, to) = util::offsets_between(data, br#"fullserverinfo ""#, br#"""#)?;
+    let (from, to) = util::offsets_between(data, br#"fullserverinfo ""#, &[b'"'])?;
     String::from_utf8(data[from..to].to_vec()).ok()
 }
 
