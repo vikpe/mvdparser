@@ -45,11 +45,11 @@ mod tests {
         assert_eq!(1225, prints.len());
         assert_eq!(
             format!("{:?}", prints[0]),
-            r#"Print { id: High, content: "bar.........axe is ready [oeks]_" }"#
+            r#"Print { id: High, content: "bar.........axe is ready [oeks]" }"#
         );
         assert_eq!(
             format!("{:?}", prints[1]),
-            r#"Print { id: Chat, content: "Server starts recording (memory):_4on4_oeks_vs_tsq[dm2]20240426-1716.mvd_" }"#
+            r#"Print { id: Chat, content: "Server starts recording (memory):_4on4_oeks_vs_tsq[dm2]20240426-1716.mvd" }"#
         );
 
         Ok(())

@@ -38,7 +38,7 @@ impl TryFrom<&[u8]> for Print {
         };
 
         let content = match content_index_to > index::CONTENT_FROM {
-            true => &value[index::CONTENT_FROM..content_index_to],
+            true => &value[index::CONTENT_FROM..content_index_to - 1], // skip \n
             false => &[],
         }
         .to_vec();
@@ -85,7 +85,7 @@ mod tests {
                 Print::try_from(data)?,
                 Print {
                     id: PrintId::Medium,
-                    content: vec![2, 3, 4, 10],
+                    content: vec![2, 3, 4],
                 }
             );
         }
