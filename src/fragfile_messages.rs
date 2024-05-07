@@ -1,7 +1,7 @@
 // ported from: https://github.com/QW-Group/mvdparser/blob/master/src/fragfile.dat
 pub const WILDCARD: &str = r#""??""#;
 
-pub const X_DIED: [&str; 17] = [
+pub const X_DEATH: [&str; 17] = [
     " sleeps with the fishes",
     " sucks it down",
     " gulped a load of slime",
@@ -21,7 +21,7 @@ pub const X_DIED: [&str; 17] = [
     " was squished",
 ];
 
-pub const X_SUICIDES_BY_WEAPON: [&str; 11] = [
+pub const X_SUICIDE_BY_WEAPON: [&str; 11] = [
     " tries to put the pin back in",
     " becomes bored with life",
     " discovers blast radius",
@@ -35,9 +35,9 @@ pub const X_SUICIDES_BY_WEAPON: [&str; 11] = [
     " heats up the water",
 ];
 
-pub const X_SUICIDES: &str = " suicides";
+pub const X_SUICIDE: &str = " suicides";
 
-pub const X_TEAMKILLS_UNKNOWN: [&str; 6] = [
+pub const X_TEAMKILL_UNKNOWN: [&str; 6] = [
     " squished a teammate",
     " mows down a teammate",
     " checks his glasses",
@@ -46,14 +46,23 @@ pub const X_TEAMKILLS_UNKNOWN: [&str; 6] = [
     " loses another friend",
 ];
 
-pub const X_FRAGS_Y: [&str; 3] = [
+pub const UNKNOWN_TEAMKILL_X: [&str; 6] = [
+    " was telefragged by his teammate",
+    " was telefragged by her teammate",
+    " was crushed by his teammate", // ktpro stomp tk
+    " was crushed by her teammate", // ktpro stomp tk
+    " was jumped by his teammate",  // ktx addon for ktpro stomp tk
+    " was jumped by her teammate",  // ktx addon for ktpro stomp tk
+];
+
+pub const X_FRAG_Y: [&str; 3] = [
     //
     r#" stomps "#,
     r#" squishes "#,
     r#" rips "??" a new one"#,
 ];
 
-pub const Y_FRAGS_X: [&str; 27] = [
+pub const Y_FRAG_X: [&str; 27] = [
     r#" was ax-murdered by "#,
     r#" softens "??"'s fall"#,
     r#" tried to catch "#,
