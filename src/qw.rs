@@ -1,3 +1,4 @@
+#[derive(Debug, PartialEq)]
 pub enum Target {
     None = 0,
     Multiple = 3,
@@ -19,6 +20,7 @@ impl From<u8> for Target {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub enum Command {
     Qwd = 0,
     Read = 1,
@@ -97,6 +99,7 @@ pub enum Message {
     Nails2 = 54,              // [byte] num [52 bits] nxyzpy 8 12 12 12 4 8
     FteModellistshort = 60,   // [strings]
     FteSpawnbaseline2 = 66,
+    EndOfDemo = 69,
     QizmoVoice = 83,
     FteVoiceChat = 84,
     Unknown = 255,
@@ -162,9 +165,47 @@ impl From<u8> for Message {
             54 => Message::Nails2,
             60 => Message::FteModellistshort,
             66 => Message::FteSpawnbaseline2,
+            69 => Message::EndOfDemo,
             83 => Message::QizmoVoice,
             84 => Message::FteVoiceChat,
             _ => Message::Unknown,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum HiddenMessage {
+    AntilagPosition = 0x0000, // mvdhidden_antilag_position_header_t mvdhidden_antilag_position_t*
+    Usercmd = 0x0001, // <byte: playernum> <byte:dropnum> <byte: msec, vec3_t: angles, short[3]: forward side up> <byte: buttons> <byte: impulse>
+    UsercmdWeapons = 0x0002, // <byte: source playernum> <int: items> <byte[4]: ammo> <byte: result> <byte*: weapon priority (nul terminated)>
+    Demoinfo = 0x0003,       // <short: block#> <byte[] content>
+    CommentaryTrack = 0x0004, // <byte: track#> [todo... <byte: audioformat> <string: short-name> <string: author(s)> <float: start-offset>?]
+    CommentaryData = 0x0005,  // <byte: track#> [todo... format-specific]
+    CommentaryTextSegment = 0x0006, // <byte: track#> [todo... <float: duration> <string: text (utf8)>]
+    Dmgdone = 0x0007, // <byte: type-flags> <short: damaged ent#> <short: damaged ent#> <short: damage>
+    UsercmdWeaponsSs = 0x0008, // (same format as mvdhidden_usercmd_weapons)
+    UsercmdWeaponInstruction = 0x0009, // <byte: playernum> <byte: flags> <int: sequence#> <int: mode> <byte[10]: weaponlist>
+    PausedDuration = 0x000A, // <byte: msec> ... actual time elapsed, not gametime (can be used to keep stream running) ... expected to be QTV only
+    Extended = 0xFFFF,       // doubt we'll ever get here: read next short...
+    Unknown = 0xDEAD,
+}
+
+impl From<u16> for HiddenMessage {
+    fn from(value: u16) -> Self {
+        match value {
+            0x0000 => HiddenMessage::AntilagPosition,
+            0x0001 => HiddenMessage::Usercmd,
+            0x0002 => HiddenMessage::UsercmdWeapons,
+            0x0003 => HiddenMessage::Demoinfo,
+            0x0004 => HiddenMessage::CommentaryTrack,
+            0x0005 => HiddenMessage::CommentaryData,
+            0x0006 => HiddenMessage::CommentaryTextSegment,
+            0x0007 => HiddenMessage::Dmgdone,
+            0x0008 => HiddenMessage::UsercmdWeaponsSs,
+            0x0009 => HiddenMessage::UsercmdWeaponInstruction,
+            0x000A => HiddenMessage::PausedDuration,
+            0xFFFF => HiddenMessage::Extended,
+            _ => HiddenMessage::Unknown,
         }
     }
 }
