@@ -12,6 +12,17 @@ mvdparser::match_duration(&data)     // Option<Duration>
 mvdparser::demo_duration(&data)      // Option<Duration>
 ```
 
+### prints
+
+```rust
+mvdparser::prints(&data) // Vec<Print>
+
+struct Print {
+    pub id: PrintId,
+    pub content: Vec<u8>,
+}
+```
+
 ### ktxstats
 
 See crate [ktxstats](https://github.com/vikpe/ktxstats) for `KtxstatsV3` definition.
