@@ -3,7 +3,7 @@ use anyhow::anyhow as e;
 use crate::num;
 use crate::qw::HiddenMessage;
 
-pub const HEADER_SIZE: usize = 8;
+pub const HEADER_SIZE: usize = num::size::LONG + 2 * num::size::SHORT;
 
 mod index {
     pub const SIZE: usize = 0;
@@ -27,13 +27,14 @@ impl TryFrom<&[u8]> for Info {
             return Err(e!("block::Info: insufficient length"));
         }
 
-        let body_size = num::read_long(&value[index::SIZE..]) as usize - 2; // exclude block number bytes from size
+        // exclude block number bytes from size
+        let body_size = num::long(&value[index::SIZE..]) as usize - num::size::SHORT;
 
         Ok(Info {
             body_size,
             total_size: HEADER_SIZE + body_size,
-            hidden_message: HiddenMessage::from(num::read_short(&value[index::HIDDEN_MESSAGE..])),
-            number: num::read_short(&value[index::NUMBER..]) as usize,
+            hidden_message: HiddenMessage::from(num::short(&value[index::HIDDEN_MESSAGE..])),
+            number: num::short(&value[index::NUMBER..]) as usize,
         })
     }
 }
