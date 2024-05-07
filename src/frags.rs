@@ -12,7 +12,7 @@ pub fn frags(data: &[u8]) -> HashMap<BString, i32> {
         // println!("{:?}", quake_text::bytestr::to_ascii(&p.content));
 
         let asdasda = quake_text::bytestr::to_ascii(&p.content);
-        match fragfile::Event::try_from(asdasda.as_str()) {
+        match fragfile::FragEvent::try_from(asdasda.as_str()) {
             Ok(event) => {
                 println!("{:?}", event);
             }

@@ -5,7 +5,7 @@ use crate::fragfile_messages::{
 };
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum Event {
+pub enum FragEvent {
     Death { player: String },
     Suicide { player: String },
     SuicideByWeapon { player: String },
@@ -13,26 +13,25 @@ pub enum Event {
     Teamkill { killer: String },
 }
 
-impl TryFrom<&str> for Event {
+impl TryFrom<&str> for FragEvent {
     type Error = anyhow::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        // todo: find player (.find())
-        if X_DIED.iter().any(|m| value.ends_with(m)) {
-            return Ok(Event::Death {
-                player: "".to_string(),
+        if let Some(p) = X_DIED.iter().find(|&p| value.ends_with(p)) {
+            return Ok(FragEvent::Death {
+                player: value.trim_end_matches(p).to_string(),
             });
-        } else if X_SUICIDES_BY_WEAPON.iter().any(|m| value.ends_with(m)) {
-            return Ok(Event::SuicideByWeapon {
-                player: "".to_string(),
+        } else if let Some(p) = X_SUICIDES_BY_WEAPON.iter().find(|&p| value.ends_with(p)) {
+            return Ok(FragEvent::SuicideByWeapon {
+                player: value.trim_end_matches(p).to_string(),
             });
         } else if value.ends_with(X_SUICIDES) {
-            return Ok(Event::Suicide {
-                player: "".to_string(),
+            return Ok(FragEvent::Suicide {
+                player: value.trim_end_matches(X_SUICIDES).to_string(),
             });
-        } else if X_TEAMKILLS_UNKNOWN.iter().any(|m| value.ends_with(m)) {
-            return Ok(Event::Teamkill {
-                killer: "".to_string(),
+        } else if let Some(p) = X_TEAMKILLS_UNKNOWN.iter().find(|&p| value.ends_with(p)) {
+            return Ok(FragEvent::Teamkill {
+                killer: value.trim_end_matches(p).to_string(),
             });
         }
 
@@ -42,7 +41,7 @@ impl TryFrom<&str> for Event {
                     true => (x, y),
                     false => (y, x),
                 };
-                return Ok(Event::Frag { killer, victim });
+                return Ok(FragEvent::Frag { killer, victim });
             }
         }
 
@@ -71,36 +70,36 @@ mod tests {
     use anyhow::Result;
     use pretty_assertions::assert_eq;
 
-    use crate::fragfile::Event::{Death, Frag, Suicide, SuicideByWeapon, Teamkill};
+    use crate::fragfile::FragEvent::{Death, Frag, Suicide, SuicideByWeapon, Teamkill};
 
     use super::*;
 
-    fn foo_death() -> Result<Event> {
+    fn foo_death() -> Result<FragEvent> {
         Ok(Death {
             player: "FOO".to_string(),
         })
     }
 
-    fn foo_suicide_wpn() -> Result<Event> {
+    fn foo_suicide_wpn() -> Result<FragEvent> {
         Ok(SuicideByWeapon {
             player: "FOO".to_string(),
         })
     }
 
-    fn foo_tk() -> Result<Event> {
+    fn foo_tk() -> Result<FragEvent> {
         Ok(Teamkill {
             killer: "FOO".to_string(),
         })
     }
 
-    fn foo_frag_bar() -> Result<Event> {
+    fn foo_frag_bar() -> Result<FragEvent> {
         Ok(Frag {
             killer: "FOO".to_string(),
             victim: "BAR".to_string(),
         })
     }
 
-    fn bar_frag_foo() -> Result<Event> {
+    fn bar_frag_foo() -> Result<FragEvent> {
         Ok(Frag {
             killer: "BAR".to_string(),
             victim: "FOO".to_string(),
@@ -109,7 +108,7 @@ mod tests {
 
     #[test]
     fn test_frag_event() -> Result<()> {
-        let test_cases: HashMap<&str, Result<Event>> = HashMap::from([
+        let test_cases: HashMap<&str, Result<FragEvent>> = HashMap::from([
             // player deaths
             ("FOO sleeps with the fishes", foo_death()),
             ("FOO sucks it down", foo_death()),
@@ -195,7 +194,7 @@ mod tests {
 
         for (input, expected) in test_cases {
             let msg = format!(r#""{}" should equal {:?}"#, &input, &expected);
-            assert_eq!(Event::try_from(input)?, expected?, "{}", msg);
+            assert_eq!(FragEvent::try_from(input)?, expected?, "{}", msg);
         }
 
         Ok(())
