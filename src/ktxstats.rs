@@ -3,9 +3,8 @@ use std::str::from_utf8;
 use bstr::ByteSlice;
 use ktxstats::v3::KtxstatsV3;
 
-use crate::frame;
-
-const JSON_NEEDLE: &[u8; 12] = br#"{"version": "#;
+use crate::qw::HiddenMessage;
+use crate::{block, frame};
 
 pub fn ktxstats_v3(data: &[u8]) -> Option<KtxstatsV3> {
     let stats_str = ktxstats_string(data)?;
@@ -13,14 +12,24 @@ pub fn ktxstats_v3(data: &[u8]) -> Option<KtxstatsV3> {
 }
 
 pub fn ktxstats_string(data: &[u8]) -> Option<String> {
-    let mut offset = data.rfind(JSON_NEEDLE)? - frame::info::LENGTH;
+    const TOTAL_HEADER_SIZE: usize = frame::MULTI_HEADER_SIZE + block::HEADER_SIZE;
+    let mut offset = data.rfind(br#"{"version": "#)? - TOTAL_HEADER_SIZE;
     let mut content = Vec::new();
 
-    while &data[offset..offset + frame::DELIMITER.len()] == frame::DELIMITER {
-        let index_from = offset + frame::info::LENGTH;
-        let index_to = index_from + frame::length(data, offset);
-        content.extend_from_slice(&data[index_from..index_to]);
-        offset = index_to;
+    // read blocks
+    while let Ok(info) = block::Info::try_from(&data[offset + frame::MULTI_HEADER_SIZE..]) {
+        if info.hidden_message != HiddenMessage::Demoinfo {
+            break;
+        }
+
+        offset += TOTAL_HEADER_SIZE;
+        content.extend_from_slice(&data[offset..offset + info.body_size]);
+
+        if info.number == 0 {
+            break;
+        }
+
+        offset += info.body_size;
     }
 
     match from_utf8(&content) {
