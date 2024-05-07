@@ -14,8 +14,9 @@ pub fn prints(data: &[u8]) -> Vec<Print> {
                 let print_offset = msg_offset + 1;
 
                 match Print::try_from(&data[print_offset..]) {
-                    Ok(msg) => prints.push(msg),
+                    Ok(msg) if !msg.content.is_empty() => prints.push(msg),
                     Err(e) => println!("Error parsing print: {:?}", e),
+                    _ => {}
                 }
             }
         }
@@ -41,7 +42,7 @@ mod tests {
         let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
         let prints = prints(&demo_data);
 
-        assert_eq!(2098, prints.len());
+        assert_eq!(1225, prints.len());
         assert_eq!(
             format!("{:?}", prints[0]),
             r#"Print { id: High, content: "bar.........axe is ready [oeks]_" }"#
