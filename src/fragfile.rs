@@ -1,8 +1,7 @@
 use anyhow::{anyhow as e, Result};
 
 use crate::fragfile_messages::{
-    PLAYER_DEATHS, PLAYER_SUICIDE, PLAYER_SUICIDES_BY_WEAPON, TEAMKILLS, WILDCARD, X_FRAGS_Y,
-    Y_FRAGS_X,
+    WILDCARD, X_DIED, X_FRAGS_Y, X_SUICIDES, X_SUICIDES_BY_WEAPON, X_TEAMKILLS_UNKNOWN, Y_FRAGS_X,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -19,19 +18,19 @@ impl TryFrom<&str> for Event {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         // todo: find player (.find())
-        if PLAYER_DEATHS.iter().any(|m| value.ends_with(m)) {
+        if X_DIED.iter().any(|m| value.ends_with(m)) {
             return Ok(Event::Death {
                 player: "".to_string(),
             });
-        } else if PLAYER_SUICIDES_BY_WEAPON.iter().any(|m| value.ends_with(m)) {
+        } else if X_SUICIDES_BY_WEAPON.iter().any(|m| value.ends_with(m)) {
             return Ok(Event::SuicideByWeapon {
                 player: "".to_string(),
             });
-        } else if value.ends_with(PLAYER_SUICIDE) {
+        } else if value.ends_with(X_SUICIDES) {
             return Ok(Event::Suicide {
                 player: "".to_string(),
             });
-        } else if TEAMKILLS.iter().any(|m| value.ends_with(m)) {
+        } else if X_TEAMKILLS_UNKNOWN.iter().any(|m| value.ends_with(m)) {
             return Ok(Event::Teamkill {
                 killer: "".to_string(),
             });

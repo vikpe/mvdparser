@@ -1,7 +1,7 @@
 // ported from: https://github.com/QW-Group/mvdparser/blob/master/src/fragfile.dat
 pub const WILDCARD: &str = r#""??""#;
 
-pub const PLAYER_DEATHS: [&str; 17] = [
+pub const X_DIED: [&str; 17] = [
     " sleeps with the fishes",
     " sucks it down",
     " gulped a load of slime",
@@ -21,7 +21,7 @@ pub const PLAYER_DEATHS: [&str; 17] = [
     " was squished",
 ];
 
-pub const PLAYER_SUICIDES_BY_WEAPON: [&str; 11] = [
+pub const X_SUICIDES_BY_WEAPON: [&str; 11] = [
     " tries to put the pin back in",
     " becomes bored with life",
     " discovers blast radius",
@@ -35,9 +35,9 @@ pub const PLAYER_SUICIDES_BY_WEAPON: [&str; 11] = [
     " heats up the water",
 ];
 
-pub const PLAYER_SUICIDE: &str = " suicides";
+pub const X_SUICIDES: &str = " suicides";
 
-pub const TEAMKILLS: [&str; 6] = [
+pub const X_TEAMKILLS_UNKNOWN: [&str; 6] = [
     " squished a teammate",
     " mows down a teammate",
     " checks his glasses",
