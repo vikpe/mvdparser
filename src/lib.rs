@@ -7,6 +7,7 @@ pub use crate::ktxstats::{ktxstats_string, ktxstats_v3};
 pub use crate::serverinfo::{serverinfo, serverinfo_string};
 pub use crate::timestamp::timestamp;
 
+mod block;
 mod clientinfo;
 mod duration;
 mod frame;
