@@ -15,6 +15,7 @@ mod ktxstats;
 pub mod matchdate;
 mod num;
 // mod pings;
+pub mod message;
 mod prints;
 mod qw;
 mod serverinfo;
