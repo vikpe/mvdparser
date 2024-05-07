@@ -209,3 +209,24 @@ impl From<u16> for HiddenMessage {
         }
     }
 }
+
+#[derive(Debug, PartialEq)]
+pub enum PrintId {
+    Low = 0,
+    Medium = 1,
+    High = 2,
+    Chat = 3, // also go to chat buffer
+    Unknown = 0xDEAD,
+}
+
+impl From<u8> for PrintId {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => PrintId::Low,
+            1 => PrintId::Medium,
+            2 => PrintId::High,
+            3 => PrintId::Chat,
+            _ => PrintId::Unknown,
+        }
+    }
+}
