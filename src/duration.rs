@@ -50,8 +50,8 @@ fn duration_until_offset(data: &[u8], target_offset: usize) -> Duration {
         }
 
         // target/command from [n+1]
-        let target = qw::Target::from(data[offset + 1]);
-        let command = qw::Command::from(data[offset + 1]);
+        let target = qw::Target::from(&data[offset + 1]);
+        let command = qw::Command::from(&data[offset + 1]);
 
         if let qw::Target::Multiple = target {
             offset += 4; // ignore leading [0 0 0 0]

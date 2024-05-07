@@ -44,7 +44,7 @@ impl TryFrom<&[u8]> for Print {
         .to_vec();
 
         Ok(Self {
-            id: PrintId::from(value[index::ID]),
+            id: PrintId::from(&value[index::ID]),
             content,
         })
     }

@@ -33,7 +33,7 @@ impl TryFrom<&[u8]> for Info {
         Ok(Info {
             body_size,
             total_size: HEADER_SIZE + body_size,
-            hidden_message: HiddenMessage::from(num::short(&value[index::HIDDEN_MESSAGE..])),
+            hidden_message: HiddenMessage::from(&num::short(&value[index::HIDDEN_MESSAGE..])),
             number: num::short(&value[index::NUMBER..]) as usize,
         })
     }

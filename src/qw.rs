@@ -7,8 +7,8 @@ pub enum Target {
     All = 6,
 }
 
-impl From<u8> for Target {
-    fn from(value: u8) -> Self {
+impl From<&u8> for Target {
+    fn from(value: &u8) -> Self {
         // parse first 3 bits
         match value & 7 {
             3 => Target::Multiple,
@@ -28,8 +28,8 @@ pub enum Command {
     Empty = 7,
 }
 
-impl From<u8> for Command {
-    fn from(value: u8) -> Self {
+impl From<&u8> for Command {
+    fn from(value: &u8) -> Self {
         // parse first 3 bits
         match value & 7 {
             0 => Command::Qwd, // should only appear in qwd
@@ -105,8 +105,8 @@ pub enum Message {
     Unknown = 255,
 }
 
-impl From<u8> for Message {
-    fn from(value: u8) -> Self {
+impl From<&u8> for Message {
+    fn from(value: &u8) -> Self {
         match value {
             0 => Message::Bad,
             1 => Message::Nop,
@@ -190,8 +190,8 @@ pub enum HiddenMessage {
     Unknown = 0xDEAD,
 }
 
-impl From<u16> for HiddenMessage {
-    fn from(value: u16) -> Self {
+impl From<&u16> for HiddenMessage {
+    fn from(value: &u16) -> Self {
         match value {
             0x0000 => HiddenMessage::AntilagPosition,
             0x0001 => HiddenMessage::Usercmd,
@@ -219,8 +219,8 @@ pub enum PrintId {
     Unknown = 0xDEAD,
 }
 
-impl From<u8> for PrintId {
-    fn from(value: u8) -> Self {
+impl From<&u8> for PrintId {
+    fn from(value: &u8) -> Self {
         match value {
             0 => PrintId::Low,
             1 => PrintId::Medium,

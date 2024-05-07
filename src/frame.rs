@@ -31,8 +31,8 @@ impl TryFrom<&[u8]> for Info {
             return Err(e!("frame::Info: unsufficient length"));
         }
 
-        let target = Target::from(value[index::TARGET]);
-        let command = Command::from(value[index::COMMAND]);
+        let target = Target::from(&value[index::TARGET]);
+        let command = Command::from(&value[index::COMMAND]);
 
         // skip multi target bytes [0,0,0,0]
         let offset = match target {
