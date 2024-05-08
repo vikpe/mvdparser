@@ -16,6 +16,12 @@ pub struct Print {
     pub content: Vec<u8>,
 }
 
+impl Print {
+    pub fn byte_length(&self) -> usize {
+        self.content.len() + 3 // + id, newline, null terminator
+    }
+}
+
 impl Debug for Print {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Print")
@@ -81,13 +87,12 @@ mod tests {
         // valid
         {
             let data: &[u8] = &[1, 2, 3, 4, 10, 0];
-            assert_eq!(
-                Print::try_from(data)?,
-                Print {
-                    id: PrintId::Medium,
-                    content: vec![2, 3, 4],
-                }
-            );
+            let print = Print {
+                id: PrintId::Medium,
+                content: vec![2, 3, 4],
+            };
+            assert_eq!(Print::try_from(data)?, print);
+            assert_eq!(print.byte_length(), 6);
         }
 
         Ok(())
