@@ -24,8 +24,8 @@ impl From<&Clientinfo> for Client {
                 value.topcolor.unwrap_or_default() as u8,
                 value.bottomcolor.unwrap_or_default() as u8,
             ],
-            is_spectator: value.spectator.is_some(),
-            is_bot: value.bot.is_some(),
+            is_spectator: value.spectator.is_some_and(|v| v != 0),
+            is_bot: value.bot.is_some_and(|v| v != 0),
         }
     }
 }
