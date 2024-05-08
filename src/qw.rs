@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Target {
     None = 0,
     Multiple = 3,
@@ -20,7 +20,7 @@ impl From<&u8> for Target {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Command {
     Qwd = 0,
     Read = 1,
@@ -40,7 +40,7 @@ impl From<&u8> for Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Message {
     Bad = 0,
     Nop = 1,
@@ -173,7 +173,7 @@ impl From<&u8> for Message {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum HiddenMessage {
     AntilagPosition = 0x0000, // mvdhidden_antilag_position_header_t mvdhidden_antilag_position_t*
     Usercmd = 0x0001, // <byte: playernum> <byte:dropnum> <byte: msec, vec3_t: angles, short[3]: forward side up> <byte: buttons> <byte: impulse>
@@ -210,7 +210,7 @@ impl From<&u16> for HiddenMessage {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum PrintId {
     Low = 0,
     Medium = 1,
