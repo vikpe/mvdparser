@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 
 use bstr::ByteSlice;
-use quake_clientinfo::Clientinfo;
 
 use fragfile::FragEvent;
 
 use crate::message::Print;
 use crate::qw::{Message, PrintId};
-use crate::{clientinfo, fragfile, frame};
+use crate::{clients, fragfile, frame};
 
 pub fn frags(data: &[u8]) -> HashMap<String, i32> {
     let mut index = 0;
@@ -35,12 +34,6 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
 
         index += frame_info.size;
     }
-
-    // let clientinfo = clientinfo::clientinfo(data).unwrap();
-
-    /*for (index, p) in clientinfo.iter().enumerate() {
-        println!("{}: {:?}", index, p.name);
-    }*/
 
     let mut frags: HashMap<String, i32> = HashMap::new();
 
@@ -86,8 +79,6 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
         }
     }
 
-    // println!("FRAGS: {:?}", frags);
-
     frags
 }
 
@@ -130,29 +121,14 @@ fn find_team_killer(data: &[u8], index: usize, victim_name: &str) -> Option<Stri
         return None;
     }
 
-    // println!("nearby frag updates");
-    // println!("{:?}", frag_update_player_numbers);
-    // println!("victim: {:?}", victim_name);
-
-    let clients = clientinfo::clientinfo(data)?;
-    let victim_client = clients.iter().find(|c| {
-        // println!("{} vs {:?}", c.name.clone().unwrap(), victim_name);
-        c.name.clone().unwrap() == *victim_name
-    })?;
-
-    // println!("victim client: {:?}", victim_client.name);
-
-    let clientm: HashMap<usize, &Clientinfo> = HashMap::from_iter(clients.iter().enumerate());
-    // println!("client map: {:?}", clientm);
+    let clients = clients::clients(data)?;
+    let victim_client = clients.iter().find(|c| c.name == *victim_name)?;
 
     frag_update_player_numbers
         .iter()
-        .filter_map(|p| clientm.get(p))
-        .find(|client| {
-            client.team.clone().unwrap() == victim_client.team.clone().unwrap()
-                && client.name.clone().unwrap() != victim_client.name.clone().unwrap()
-        })
-        .map(|c| c.name.clone().unwrap())
+        .filter_map(|player_number| clients.iter().find(|c| c.number == *player_number))
+        .find(|c| c.team == victim_client.team && c.name != victim_client.name)
+        .map(|c| c.name.clone())
 }
 
 #[cfg(test)]
