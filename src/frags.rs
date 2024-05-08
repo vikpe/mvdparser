@@ -148,7 +148,10 @@ fn find_team_killer(data: &[u8], index: usize, victim_name: &str) -> Option<Stri
     frag_update_player_numbers
         .iter()
         .filter_map(|p| clientm.get(p))
-        .find(|client| client.team.clone().unwrap() == victim_client.team.clone().unwrap())
+        .find(|client| {
+            client.team.clone().unwrap() == victim_client.team.clone().unwrap()
+                && client.name.clone().unwrap() != victim_client.name.clone().unwrap()
+        })
         .map(|c| c.name.clone().unwrap())
 }
 
