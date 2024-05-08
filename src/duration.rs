@@ -2,15 +2,19 @@ use std::time::Duration;
 
 use bstr::ByteSlice;
 
-use crate::{frame, ktxstats_string, util};
+use crate::{frame, ktxstats_string, matchdate, util};
 
 pub fn countdown_duration(data: &[u8]) -> Option<Duration> {
-    let offset = data.find(b"matchdate")?;
+    let offset = data.find(matchdate::NEEDLE)?;
     Some(duration_until_offset(data, offset))
 }
 
 pub fn demo_duration(data: &[u8]) -> Option<Duration> {
-    let offset = data.rfind(b"Standby").unwrap_or(data.len());
+    const NEEDLE: [u8; 0x10] = [
+        0x34, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x00, 0x53, 0x74, 0x61, 0x6E, 0x64, 0x62, 0x79,
+        0x00, // "[serverinfo] [status] Standby"
+    ];
+    let offset = data.rfind(NEEDLE).unwrap_or(data.len());
     Some(duration_until_offset(data, offset))
 }
 
@@ -32,8 +36,8 @@ fn match_duration_from_ktxstats(data: &[u8]) -> Option<Duration> {
 }
 
 fn duration_until_offset(data: &[u8], target_offset: usize) -> Duration {
-    let mut total_ms: u32 = 0;
     let mut index = 0;
+    let mut total_ms: u32 = 0;
 
     while let Ok(frame_info) = frame::Info::from_data_and_index(data, index) {
         if index >= target_offset {

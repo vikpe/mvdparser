@@ -3,7 +3,9 @@ use chrono::{DateTime, Utc};
 
 use crate::timezone;
 
-const NEEDLE: &[u8; 11] = b"matchdate: ";
+pub const NEEDLE: [u8; 0x0D] = [
+    0x08, 0x02, 0x6D, 0x61, 0x74, 0x63, 0x68, 0x64, 0x61, 0x74, 0x65, 0x3A, 0x20,
+]; // "[print] matchdate: "
 const DATETIME_LEN: usize = "yyyy-mm-dd hh:mm:ss".len();
 const MIN_LEN: usize = "yyyy-mm-dd hh:mm:ss ab".len();
 const MAX_LEN: usize = "yyyy-mm-dd hh:mm:ss abcde".len();
