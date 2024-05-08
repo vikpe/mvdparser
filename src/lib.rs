@@ -17,6 +17,7 @@ mod ktxstats;
 pub mod matchdate;
 mod num;
 // mod pings;
+mod clients;
 mod fragfile;
 mod fragfile_messages;
 mod frags;
