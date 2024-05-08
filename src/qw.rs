@@ -56,7 +56,7 @@ pub enum Message {
     ServerData = 11, // [long] protocol ...
     Lightstyle = 12, // [byte] [string]
     NqUpdateName = 13, // [byte] [string]
-    UpdateFrags = 14, // [byte] [short]
+    UpdateFrags = 14, // [byte] player_number [short] frags
     NqClientdata = 15, // <shortbits + data>
     StopSound = 16, // <see code>
     NqUpdateColors = 17, // [byte] [byte] [byte]
