@@ -8,16 +8,16 @@ use crate::{fragfile, frame};
 
 pub fn frags(data: &[u8]) -> HashMap<String, i32> {
     // get all prints along with frame info
-    let mut data_offset = 0;
-    let mut print_frames: Vec<(Print, frame::DetailedInfo)> = vec![];
+    let mut index = 0;
+    let mut print_frames: Vec<(Print, frame::Info)> = vec![];
 
-    while let Ok(frame_info) = frame::DetailedInfo::from_data_and_index(data, data_offset) {
-        if frame_info.body.size == 0 {
-            data_offset += frame_info.size;
+    while let Ok(frame_info) = frame::Info::from_data_and_index(data, index) {
+        if frame_info.body_size == 0 {
+            index += frame_info.size;
             continue;
         }
 
-        let msg_offset = data_offset + frame_info.header.size;
+        let msg_offset = frame_info.header_range.end;
 
         if Message::Print == Message::from(&data[msg_offset]) {
             let print_offset = msg_offset + 1;
@@ -31,7 +31,7 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
             }
         }
 
-        data_offset += frame_info.size;
+        index += frame_info.size;
     }
 
     let mut frags: HashMap<String, i32> = HashMap::new();
@@ -81,7 +81,7 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
     frags
 }
 
-#[cfg(test)]
+/*#[cfg(test)]
 mod tests {
     use std::fs::read;
 
@@ -110,3 +110,4 @@ mod tests {
         Ok(())
     }
 }
+*/

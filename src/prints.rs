@@ -1,19 +1,19 @@
-use crate::frame::Info;
+use crate::frame;
 use crate::message::Print;
 use crate::qw::Message;
 
 pub fn prints(data: &[u8]) -> Vec<Print> {
-    let mut frame_offset = 0;
+    let mut index = 0;
     let mut prints: Vec<Print> = Vec::new();
 
-    while let Ok(frame_info) = Info::try_from(&data[frame_offset..]) {
+    while let Ok(frame_info) = frame::Info::from_data_and_index(data, index) {
         if frame_info.body_size > 0 {
-            let msg_offset = frame_offset + frame_info.header_size;
+            let msg_index = frame_info.header_range.end;
 
-            if Message::Print == Message::from(&data[msg_offset]) {
-                let print_offset = msg_offset + 1;
+            if Message::Print == Message::from(&data[msg_index]) {
+                let print_index = msg_index + 1;
 
-                match Print::try_from(&data[print_offset..]) {
+                match Print::try_from(&data[print_index..]) {
                     Ok(msg) if !msg.content.is_empty() => prints.push(msg),
                     Err(e) => println!("Error parsing print: {:?}", e),
                     _ => {}
@@ -21,7 +21,7 @@ pub fn prints(data: &[u8]) -> Vec<Print> {
             }
         }
 
-        frame_offset += frame_info.total_size;
+        index += frame_info.size;
     }
 
     prints.dedup();

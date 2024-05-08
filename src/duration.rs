@@ -2,8 +2,7 @@ use std::time::Duration;
 
 use bstr::ByteSlice;
 
-use crate::frame::Info;
-use crate::{ktxstats_string, util};
+use crate::{frame, ktxstats_string, util};
 
 pub fn countdown_duration(data: &[u8]) -> Option<Duration> {
     let offset = data.find(b"matchdate")?;
@@ -34,15 +33,15 @@ fn match_duration_from_ktxstats(data: &[u8]) -> Option<Duration> {
 
 fn duration_until_offset(data: &[u8], target_offset: usize) -> Duration {
     let mut total_ms: u32 = 0;
-    let mut offset = 0;
+    let mut index = 0;
 
-    while let Ok(frame_info) = Info::try_from(&data[offset..]) {
-        if offset >= target_offset {
+    while let Ok(frame_info) = frame::Info::from_data_and_index(data, index) {
+        if index >= target_offset {
             break;
         }
 
         total_ms += frame_info.duration;
-        offset += frame_info.total_size;
+        index += frame_info.size;
     }
 
     Duration::from_secs_f32(total_ms as f32 / 1000.0)
