@@ -1,6 +1,10 @@
 pub use quake_clientinfo::Clientinfo;
 pub use quake_serverinfo::Serverinfo;
 
+pub use client::Client;
+pub use player::Player;
+pub use team::Team;
+
 pub use crate::clientinfo::clientinfo;
 pub use crate::duration::{countdown_duration, demo_duration, match_duration};
 pub use crate::frags::frags;
@@ -20,10 +24,14 @@ pub mod all {
     pub use crate::frags::*;
     pub use crate::ktxstats::*;
     pub use crate::matchdate::*;
+    pub use crate::mvd::*;
     pub use crate::ping::*;
+    pub use crate::player::*;
     pub use crate::players::*;
     pub use crate::prints::*;
+    pub use crate::qw::*;
     pub use crate::serverinfo::*;
+    pub use crate::team::*;
     pub use crate::teams::*;
     pub use crate::timestamp::*;
 }

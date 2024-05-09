@@ -1,7 +1,7 @@
 use std::io::Cursor;
 
-use crate::numsize;
 use crate::mvd::io::ReadPrimitives;
+use crate::numsize;
 use crate::qw::HiddenMessage;
 
 pub const HEADER_SIZE: usize = numsize::LONG + 2 * numsize::SHORT;
