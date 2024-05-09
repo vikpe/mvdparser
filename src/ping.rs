@@ -70,18 +70,51 @@ mod tests {
 
     #[test]
     fn test_pings() -> Result<()> {
-        let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
-        let pings = pings(&demo_data)?;
+        {
+            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
+            let pings = pings(&demo_data)?;
+            assert_eq!(pings.get(&0), Some(&25));
+            assert_eq!(pings.get(&1), Some(&620));
+            assert_eq!(pings.get(&2), Some(&29));
+        }
 
-        assert_eq!(pings.get(&0), Some(&26));
-        assert_eq!(pings.get(&1), Some(&26));
-        assert_eq!(pings.get(&2), Some(&666));
-        assert_eq!(pings.get(&3), Some(&12));
-        assert_eq!(pings.get(&4), Some(&28));
-        assert_eq!(pings.get(&5), Some(&12));
-        assert_eq!(pings.get(&6), Some(&12));
-        assert_eq!(pings.get(&7), Some(&12));
-        assert_eq!(pings.get(&8), Some(&12));
+        {
+            let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd");
+            let pings = pings(&demo_data?)?;
+            assert_eq!(pings.get(&0), Some(&26));
+            assert_eq!(pings.get(&1), Some(&26));
+            assert_eq!(pings.get(&2), Some(&666));
+            assert_eq!(pings.get(&3), Some(&12));
+            assert_eq!(pings.get(&4), Some(&28));
+            assert_eq!(pings.get(&5), Some(&12));
+            assert_eq!(pings.get(&6), Some(&12));
+            assert_eq!(pings.get(&7), Some(&12));
+            assert_eq!(pings.get(&8), Some(&12));
+        }
+
+        {
+            let demo_data = read("tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd");
+            let pings = pings(&demo_data?)?;
+            assert_eq!(pings.get(&0), Some(&14));
+            assert_eq!(pings.get(&1), Some(&52));
+            assert_eq!(pings.get(&2), Some(&38));
+            assert_eq!(pings.get(&3), Some(&12));
+            assert_eq!(pings.get(&4), Some(&666));
+            assert_eq!(pings.get(&5), Some(&25));
+        }
+
+        {
+            let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
+            let pings = pings(&demo_data)?;
+            assert_eq!(pings.get(&0), Some(&557));
+            assert_eq!(pings.get(&1), Some(&12));
+            assert_eq!(pings.get(&2), Some(&12));
+            assert_eq!(pings.get(&3), Some(&10));
+            assert_eq!(pings.get(&4), Some(&50));
+            assert_eq!(pings.get(&5), Some(&10));
+            assert_eq!(pings.get(&6), Some(&10));
+            assert_eq!(pings.get(&7), Some(&10));
+        }
 
         Ok(())
     }
