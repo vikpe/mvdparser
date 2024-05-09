@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 
+use anyhow::{anyhow as e, Result};
+
 use fragfile::FragEvent;
 
 use crate::mvd::message::io::ReadMessages;
@@ -66,7 +68,7 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
                         *killer -= 1;
                     }
                     FragEvent::TeamkillByUnknown { victim } => {
-                        if let Some(name) = find_team_killer(data, frame_info.index, &victim) {
+                        if let Ok(name) = find_team_killer(data, frame_info.index, &victim) {
                             // println!("KILLER: {:?} -> {}", content_u, name);
                             let killer = frags.entry(name).or_insert(0);
                             *killer -= 1;
@@ -83,7 +85,7 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
     frags
 }
 
-fn find_team_killer(data: &[u8], index: usize, victim_name: &str) -> Option<String> {
+fn find_team_killer(data: &[u8], index: usize, victim_name: &str) -> Result<String> {
     let mut index = index;
     let mut frame_count: usize = 1;
     let mut frag_update_player_numbers: Vec<u8> = vec![];
@@ -117,17 +119,24 @@ fn find_team_killer(data: &[u8], index: usize, victim_name: &str) -> Option<Stri
     }
 
     if frag_update_player_numbers.is_empty() {
-        return None;
+        return Err(e!("Unable to find nearby frag updates"));
     }
 
     let clients = clients::clients(data)?;
-    let victim_client = clients.iter().find(|c| c.name == *victim_name)?;
+    let Some(victim_client) = clients.iter().find(|c| c.name == *victim_name) else {
+        return Err(e!("Unable to find victim"));
+    };
 
-    frag_update_player_numbers
+    let killer = frag_update_player_numbers
         .iter()
         .filter_map(|player_number| clients.iter().find(|c| c.number == *player_number))
         .find(|c| c.team == victim_client.team && c.name != victim_client.name)
-        .map(|c| c.name.clone())
+        .map(|c| c.name.clone());
+
+    match killer {
+        Some(killer) => Ok(killer),
+        None => Err(e!("Unable to find team killer")),
+    }
 }
 
 #[cfg(test)]
