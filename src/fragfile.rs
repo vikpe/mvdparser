@@ -51,7 +51,7 @@ impl TryFrom<&str> for FragEvent {
             }
         }
 
-        Err(e!(r#"Unable to to parse message: "{}""#, value))
+        Err(e!(r#"Unable to parse message: "{}""#, value))
     }
 }
 

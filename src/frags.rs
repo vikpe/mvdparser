@@ -1,11 +1,13 @@
 use std::collections::HashMap;
-
-use bstr::ByteSlice;
+use std::io::Cursor;
 
 use fragfile::FragEvent;
 
-use crate::message::Print;
-use crate::qw::{Message, PrintId};
+use crate::mvd::message::io::ReadMessages;
+use crate::mvd::message::print::ReadPrint;
+use crate::mvd::message::update_frags::ReadUpdateFrags;
+use crate::mvd::message::Print;
+use crate::qw::{MessageType, PrintId};
 use crate::{clients, fragfile, frame};
 
 pub fn frags(data: &[u8]) -> HashMap<String, i32> {
@@ -18,17 +20,16 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
             continue;
         }
 
-        let msg_offset = frame_info.header_range.end;
+        let mut body = Cursor::new(&data[frame_info.clone().body_range]);
 
-        if Message::Print == Message::from(&data[msg_offset]) {
-            let print_offset = msg_offset + 1;
-
-            match Print::try_from(&data[print_offset..]) {
-                Ok(p) if p.id == PrintId::Medium && !p.content.is_empty() => {
+        if body
+            .read_message_type()
+            .is_ok_and(|t| t == MessageType::Print)
+        {
+            if let Ok(p) = body.read_print() {
+                if p.id == PrintId::Medium && !p.content.is_empty() {
                     print_frames.push((p, frame_info.clone()))
                 }
-                Err(e) => println!("Error parsing print: {:?}", e),
-                _ => {}
             }
         }
 
@@ -40,7 +41,7 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
     for (print, frame_info) in print_frames {
         let content_u = quake_text::bytestr::to_unicode(&print.content);
 
-        match FragEvent::try_from(content_u.as_str()) {
+        match FragEvent::try_from(content_u.trim_end()) {
             Ok(event) => {
                 //println!("{:?}", event);
                 match event {
@@ -84,36 +85,34 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
 
 fn find_team_killer(data: &[u8], index: usize, victim_name: &str) -> Option<String> {
     let mut index = index;
-    let mut frame_count: usize = 0;
-    let mut frag_update_player_numbers: Vec<usize> = vec![];
-    let max_frame_count = 3;
+    let mut frame_count: usize = 1;
+    let mut frag_update_player_numbers: Vec<u8> = vec![];
+    const MAX_FRAME_COUNT: usize = 4;
 
-    while let Ok(frame_info) = frame::Info::from_data_and_index(data, index) {
-        if frame_count >= max_frame_count {
+    while let Ok(info) = frame::Info::from_data_and_index(data, index) {
+        if frame_count >= MAX_FRAME_COUNT {
             break;
-        }
-
-        if frame_info.body_size == 0 {
-            index += frame_info.size;
+        } else if info.body_size == 0 {
+            index += info.size;
             continue;
         }
 
-        let msg_offset = frame_info.header_range.end;
-        let msg = Message::from(&data[msg_offset]);
+        let mut body = Cursor::new(&data[info.body_range.clone()]);
 
-        if Message::Print == msg {
-            let next_msg_byte = data[frame_info.body_range.clone()]
-                .find([0])
-                .map(|n| frame_info.body_range.start + n + 1)?;
-
-            if Message::UpdateFrags == Message::from(&data[next_msg_byte]) {
-                frag_update_player_numbers.push(data[next_msg_byte + 1] as usize);
-            }
-        } else if Message::UpdateFrags == msg {
-            frag_update_player_numbers.push(data[msg_offset + 1] as usize);
+        if frame_count == 1 {
+            body.read_print().ok();
         }
 
-        index += frame_info.size;
+        if body
+            .read_message_type()
+            .is_ok_and(|t| t == MessageType::UpdateFrags)
+        {
+            if let Ok(u) = body.read_update_frags() {
+                frag_update_player_numbers.push(u.player_number);
+            }
+        }
+
+        index += info.size;
         frame_count += 1;
     }
 

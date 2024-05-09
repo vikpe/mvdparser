@@ -4,7 +4,7 @@ use crate::clientinfo;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Client {
-    pub number: usize,
+    pub number: u8,
     pub name: String,
     pub team: String,
     pub color: [u8; 2],
@@ -36,7 +36,7 @@ pub fn clients(data: &[u8]) -> Option<Vec<Client>> {
         .enumerate()
         .map(|(number, info)| {
             let mut client = Client::from(info);
-            client.number = number;
+            client.number = number as u8;
             client
         })
         .collect();

@@ -2,8 +2,6 @@ use std::fs;
 
 use criterion::{criterion_group, criterion_main, Criterion, Throughput};
 
-use mvdparser::matchdate;
-
 // get .mvd files from
 // https://github.com/vikpe/mvdparser/tree/main/tests/files
 fn get_demo_data() -> Vec<u8> {
@@ -15,6 +13,8 @@ fn lib_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("lib");
     group.throughput(Throughput::Bytes(data.len() as u64));
 
+    group.bench_function("pings", |b| b.iter(|| mvdparser::pings(&data)));
+
     group.bench_function("frags", |b| b.iter(|| mvdparser::frags(&data)));
     group.bench_function("prints", |b| b.iter(|| mvdparser::prints(&data)));
 
@@ -25,9 +25,9 @@ fn lib_benchmark(c: &mut Criterion) {
     });
     group.bench_function("ktxstats_v3", |b| b.iter(|| mvdparser::ktxstats_v3(&data)));
 
-    group.bench_function("matchdate", |b| b.iter(|| matchdate::matchdate(&data)));
+    group.bench_function("matchdate", |b| b.iter(|| mvdparser::matchdate(&data)));
     group.bench_function("matchdate_string", |b| {
-        b.iter(|| matchdate::matchdate_string(&data))
+        b.iter(|| mvdparser::matchdate_string(&data))
     });
 
     group.bench_function("serverinfo", |b| b.iter(|| mvdparser::serverinfo(&data)));
