@@ -1,62 +1,77 @@
-use anyhow::anyhow as e;
+use std::io::Cursor;
+use std::ops::Range;
 
-use crate::num;
+use anyhow::{anyhow as e, Result};
+
+use crate::mvd::io::ReadPrimitives;
+use crate::numsize;
 use crate::qw::{Command, Target};
 
-pub const HEADER_SIZE: usize = num::size::SHORT + num::size::LONG;
-pub const MULTI_HEADER_SIZE: usize = HEADER_SIZE + num::size::LONG;
+pub const HEADER_SIZE: usize = numsize::SHORT + numsize::LONG;
+pub const MULTI_HEADER_SIZE: usize = HEADER_SIZE + numsize::LONG;
 
-mod index {
-    pub const DURATION: usize = 0;
-    pub const TARGET: usize = 1;
-    pub const COMMAND: usize = 1;
-    pub const SIZE: usize = 2;
-}
-
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Info {
     pub duration: u32,
     pub target: Target,
     pub command: Command,
+    pub index: usize,
+    pub size: usize,
     pub header_size: usize,
+    pub header_range: Range<usize>,
     pub body_size: usize,
-    pub total_size: usize,
+    pub body_range: Range<usize>,
 }
 
-impl TryFrom<&[u8]> for Info {
-    type Error = anyhow::Error;
+impl Info {
+    pub fn from_data_and_index(data: &[u8], index: usize) -> Result<Self> {
+        let mut cur = Cursor::new(&data[index..]);
 
-    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-        if value.len() < MULTI_HEADER_SIZE {
-            return Err(e!("frame::Info: unsufficient length"));
-        }
+        let duration = cur.read_byte()? as u32;
 
-        let target = Target::from(&value[index::TARGET]);
-        let command = Command::from(&value[index::COMMAND]);
+        let (target, command) = {
+            let byte = cur.read_byte()?;
+            (Target::from(&byte), Command::from(&byte))
+        };
 
-        // skip multi target bytes [0,0,0,0]
-        let offset = match target {
-            Target::Multiple => num::size::LONG,
+        let multi_bytes = match target {
+            Target::Multiple => numsize::LONG, // skip multi target bytes [0,0,0,0]
             _ => 0,
         };
+        cur.set_position(cur.position() + multi_bytes as u64);
 
         let body_size = match command {
-            Command::Read => num::long(&value[offset + index::SIZE..]) as usize,
-            Command::Set => 2 * num::size::LONG, // reads 2 longs (8 bytes)
-            _ => 0,                              // should not happen
+            Command::Read => cur.read_u32()? as usize,
+            Command::Set => 2 * numsize::LONG, // reads 2 longs (8 bytes)
+            _ => 0,                            // should not happen
         };
 
-        let header_size = HEADER_SIZE + offset;
+        let header_size = cur.position() as usize;
+        let size = header_size + body_size;
 
-        Ok(Info {
-            duration: value[index::DURATION] as u32,
+        if data.len() < size {
+            return Err(e!("Frame is smaller than expected size"));
+        }
+
+        Ok(Self {
+            index,
+            duration,
             target,
             command,
+            size,
             header_size,
+            header_range: index..index + header_size,
             body_size,
-            total_size: header_size + body_size,
+            body_range: index + header_size..index + size,
         })
     }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct SliceInfo {
+    pub size: usize,
+    pub range_abs: Range<usize>,
+    // pub range_rel: Range<usize>,
 }
 
 #[cfg(test)]
@@ -69,32 +84,34 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_frameinfo() -> Result<()> {
+    fn test_from_data_and_index() -> Result<()> {
         let data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
 
-        assert_eq!(
-            Info::try_from(&data[0..])?,
-            Info {
-                duration: 0,
-                target: Target::All,
-                command: Command::Read,
-                header_size: 6,
-                body_size: 450,
-                total_size: 456,
-            }
-        );
+        {
+            assert_eq!(
+                Info::from_data_and_index(&data[0..10], 0)
+                    .unwrap_err()
+                    .to_string(),
+                "Frame is smaller than expected size".to_string()
+            );
+        }
 
-        assert_eq!(
-            Info::try_from(&data[456..])?,
-            Info {
-                duration: 0,
-                target: Target::All,
-                command: Command::Read,
-                header_size: 6,
-                body_size: 737,
-                total_size: 743,
-            }
-        );
+        {
+            assert_eq!(
+                Info::from_data_and_index(&data, 456)?,
+                Info {
+                    index: 456,
+                    duration: 0,
+                    target: Target::All,
+                    command: Command::Read,
+                    size: 743,
+                    header_size: 6,
+                    header_range: 456..462,
+                    body_size: 737,
+                    body_range: 462..1199,
+                }
+            );
+        }
 
         Ok(())
     }

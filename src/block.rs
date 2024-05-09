@@ -1,15 +1,10 @@
-use anyhow::anyhow as e;
+use std::io::Cursor;
 
-use crate::num;
+use crate::numsize;
+use crate::mvd::io::ReadPrimitives;
 use crate::qw::HiddenMessage;
 
-pub const HEADER_SIZE: usize = num::size::LONG + 2 * num::size::SHORT;
-
-mod index {
-    pub const SIZE: usize = 0;
-    pub const HIDDEN_MESSAGE: usize = 4;
-    pub const NUMBER: usize = 6;
-}
+pub const HEADER_SIZE: usize = numsize::LONG + 2 * numsize::SHORT;
 
 #[derive(Debug, PartialEq)]
 pub struct Info {
@@ -23,18 +18,15 @@ impl TryFrom<&[u8]> for Info {
     type Error = anyhow::Error;
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-        if value.len() < HEADER_SIZE {
-            return Err(e!("block::Info: insufficient length"));
-        }
-
+        let mut cur = Cursor::new(value);
         // exclude block number bytes from size
-        let body_size = num::long(&value[index::SIZE..]) as usize - num::size::SHORT;
+        let body_size = cur.read_u32()? as usize - numsize::SHORT;
 
         Ok(Info {
             body_size,
             total_size: HEADER_SIZE + body_size,
-            hidden_message: HiddenMessage::from(&num::short(&value[index::HIDDEN_MESSAGE..])),
-            number: num::short(&value[index::NUMBER..]) as usize,
+            hidden_message: HiddenMessage::from(&cur.read_u16()?),
+            number: cur.read_u16()? as usize,
         })
     }
 }

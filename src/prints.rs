@@ -1,27 +1,32 @@
-use crate::frame::Info;
-use crate::message::Print;
-use crate::qw::Message;
+use std::io::Cursor;
+
+use crate::frame;
+use crate::mvd::message::io::ReadMessages;
+use crate::mvd::message::print::ReadPrint;
+use crate::mvd::message::Print;
+use crate::qw::MessageType;
 
 pub fn prints(data: &[u8]) -> Vec<Print> {
-    let mut frame_offset = 0;
+    let mut index = 0;
     let mut prints: Vec<Print> = Vec::new();
 
-    while let Ok(frame_info) = Info::try_from(&data[frame_offset..]) {
-        if frame_info.body_size > 0 {
-            let msg_offset = frame_offset + frame_info.header_size;
+    while let Ok(info) = frame::Info::from_data_and_index(data, index) {
+        if info.body_size > 0 {
+            let mut body = Cursor::new(&data[info.body_range]);
 
-            if Message::Print == Message::from(&data[msg_offset]) {
-                let print_offset = msg_offset + 1;
-
-                match Print::try_from(&data[print_offset..]) {
-                    Ok(msg) if !msg.content.is_empty() => prints.push(msg),
-                    Err(e) => println!("Error parsing print: {:?}", e),
-                    _ => {}
+            if body
+                .read_message_type()
+                .is_ok_and(|t| t == MessageType::Print)
+            {
+                if let Ok(print) = body.read_print() {
+                    if !print.content.is_empty() {
+                        prints.push(print);
+                    }
                 }
             }
         }
 
-        frame_offset += frame_info.total_size;
+        index += info.size;
     }
 
     prints.dedup();

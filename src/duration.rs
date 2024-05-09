@@ -2,20 +2,19 @@ use std::time::Duration;
 
 use bstr::ByteSlice;
 
-use crate::{ktxstats_string, qw, util};
-
-const H_INFO_SIZE: usize = 6; // [time] [target/command] [size]
-const H_CMD_SIZE: usize = H_INFO_SIZE + 1; // [info] [cmd]
-const N_MATCH_START: &[u8] = b"matchdate";
-const N_MATCH_END: &[u8] = b"Standby";
+use crate::{frame, ktxstats_string, matchdate, util};
 
 pub fn countdown_duration(data: &[u8]) -> Option<Duration> {
-    let offset = data.find(N_MATCH_START)?;
+    let offset = data.find(matchdate::NEEDLE)?;
     Some(duration_until_offset(data, offset))
 }
 
 pub fn demo_duration(data: &[u8]) -> Option<Duration> {
-    let offset = data.rfind(N_MATCH_END).unwrap_or(data.len());
+    const NEEDLE: [u8; 0x10] = [
+        0x34, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x00, 0x53, 0x74, 0x61, 0x6E, 0x64, 0x62, 0x79,
+        0x00, // "[serverinfo] [status] Standby"
+    ];
+    let offset = data.rfind(NEEDLE).unwrap_or(data.len());
     Some(duration_until_offset(data, offset))
 }
 
@@ -37,39 +36,16 @@ fn match_duration_from_ktxstats(data: &[u8]) -> Option<Duration> {
 }
 
 fn duration_until_offset(data: &[u8], target_offset: usize) -> Duration {
+    let mut index = 0;
     let mut total_ms: u32 = 0;
-    let mut offset = 0;
 
-    while (offset + H_CMD_SIZE) < data.len() {
-        // time [n]
-        total_ms += data[offset] as u32;
-
-        // check offset
-        if offset >= target_offset {
+    while let Ok(frame_info) = frame::Info::from_data_and_index(data, index) {
+        if index >= target_offset {
             break;
         }
 
-        // target/command from [n+1]
-        let target = qw::Target::from(&data[offset + 1]);
-        let command = qw::Command::from(&data[offset + 1]);
-
-        if let qw::Target::Multiple = target {
-            offset += 4; // ignore leading [0 0 0 0]
-        }
-
-        // size [n+2..]
-        let frame_size: u32 = match command {
-            qw::Command::Read => u32::from_le_bytes([
-                data[offset + 2],
-                data[offset + 3],
-                data[offset + 4],
-                data[offset + 5],
-            ]),
-            qw::Command::Set => 8,
-            _ => 0, // should not happen
-        };
-
-        offset += H_INFO_SIZE + frame_size as usize;
+        total_ms += frame_info.duration;
+        index += frame_info.size;
     }
 
     Duration::from_secs_f32(total_ms as f32 / 1000.0)

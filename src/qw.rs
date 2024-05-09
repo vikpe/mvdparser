@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Target {
     None = 0,
     Multiple = 3,
@@ -20,7 +20,7 @@ impl From<&u8> for Target {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Command {
     Qwd = 0,
     Read = 1,
@@ -40,27 +40,28 @@ impl From<&u8> for Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
-pub enum Message {
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum MessageType {
     Bad = 0,
     Nop = 1,
     Disconnect = 2,
-    UpdateStat = 3,      // [byte] [byte]
-    NqVersion = 4,       // [long] server version
-    NqSetview = 5,       // [short] entity number
-    Sound = 6,           // <see code>
-    NqTime = 7,          // [float] server time
-    Print = 8,           // [byte] id [string] null terminated string
+    UpdateStat = 3, // [byte] [byte]
+    NqVersion = 4,  // [long] server version
+    NqSetview = 5,  // [short] entity number
+    Sound = 6,      // <see code>
+    NqTime = 7,     // [float] server time
+    Print = 8,      // [byte] id [string] null terminated string
     Stufftext = 9, // [string] stuffed into client's console buffer, the string should be \n terminated
-    SetAngle = 10, // [angle3] set the view angle to this absolute value
-    ServerData = 11, // [long] protocol ...
-    Lightstyle = 12, // [byte] [string]
-    NqUpdateName = 13, // [byte] [string]
-    UpdateFrags = 14, // [byte] [short]
-    NqClientdata = 15, // <shortbits + data>
-    StopSound = 16, // <see code>
+
+    SetAngle = 10,       // [angle3] set the view angle to this absolute value
+    ServerData = 11,     // [long] protocol ...
+    Lightstyle = 12,     // [byte] [string]
+    NqUpdateName = 13,   // [byte] [string]
+    UpdateFrags = 14,    // [byte] player_number [short] frags
+    NqClientdata = 15,   // <shortbits + data>
+    StopSound = 16,      // <see code>
     NqUpdateColors = 17, // [byte] [byte] [byte]
-    NqParticle = 18, // [vec3] <variable>
+    NqParticle = 18,     // [vec3] <variable>
     Damage = 19,
     SpawnStatic = 20,
     FteSpawnStatic2 = 21,
@@ -78,7 +79,7 @@ pub enum Message {
     Sellscreen = 33,
     Smallkick = 34,           // set client punchangle to 2
     Bigkick = 35,             // set client punchangle to 4
-    UpdatePing = 36,          // [byte] [short]
+    UpdatePing = 36,          // [byte] player_number [short] ping
     UpdateEntertime = 37,     // [byte] [float]
     UpdateStatLong = 38,      // [byte] [long]
     Muzzleflash = 39,         // [short] entity
@@ -105,75 +106,75 @@ pub enum Message {
     Unknown = 255,
 }
 
-impl From<&u8> for Message {
+impl From<&u8> for MessageType {
     fn from(value: &u8) -> Self {
         match value {
-            0 => Message::Bad,
-            1 => Message::Nop,
-            2 => Message::Disconnect,
-            3 => Message::UpdateStat,
-            4 => Message::NqVersion,
-            5 => Message::NqSetview,
-            6 => Message::Sound,
-            7 => Message::NqTime,
-            8 => Message::Print,
-            9 => Message::Stufftext,
-            10 => Message::SetAngle,
-            11 => Message::ServerData,
-            12 => Message::Lightstyle,
-            13 => Message::NqUpdateName,
-            14 => Message::UpdateFrags,
-            15 => Message::NqClientdata,
-            16 => Message::StopSound,
-            17 => Message::NqUpdateColors,
-            18 => Message::NqParticle,
-            19 => Message::Damage,
-            20 => Message::SpawnStatic,
-            21 => Message::FteSpawnStatic2,
-            22 => Message::SpawnBaseline,
-            23 => Message::TempEntity,
-            24 => Message::SetPause,
-            25 => Message::NqSignonnum,
-            26 => Message::CenterPrint,
-            27 => Message::Killedmonster,
-            28 => Message::FoundSecret,
-            29 => Message::SpawnStaticSound,
-            30 => Message::Intermission,
-            31 => Message::Finale,
-            32 => Message::Cdtrack,
-            33 => Message::Sellscreen,
-            34 => Message::Smallkick,
-            35 => Message::Bigkick,
-            36 => Message::UpdatePing,
-            37 => Message::UpdateEntertime,
-            38 => Message::UpdateStatLong,
-            39 => Message::Muzzleflash,
-            40 => Message::UpdateUserinfo,
-            41 => Message::Download,
-            42 => Message::Playerinfo,
-            43 => Message::Nails,
-            44 => Message::ChokeCount,
-            45 => Message::Modellist,
-            46 => Message::Soundlist,
-            47 => Message::Packetentities,
-            48 => Message::Deltapacketentities,
-            49 => Message::Maxspeed,
-            50 => Message::Entgravity,
-            51 => Message::Setinfo,
-            52 => Message::Serverinfo,
-            53 => Message::UpdatePl,
-            54 => Message::Nails2,
-            60 => Message::FteModellistshort,
-            66 => Message::FteSpawnbaseline2,
-            69 => Message::EndOfDemo,
-            83 => Message::QizmoVoice,
-            84 => Message::FteVoiceChat,
-            _ => Message::Unknown,
+            0 => MessageType::Bad,
+            1 => MessageType::Nop,
+            2 => MessageType::Disconnect,
+            3 => MessageType::UpdateStat,
+            4 => MessageType::NqVersion,
+            5 => MessageType::NqSetview,
+            6 => MessageType::Sound,
+            7 => MessageType::NqTime,
+            8 => MessageType::Print,
+            9 => MessageType::Stufftext,
+            10 => MessageType::SetAngle,
+            11 => MessageType::ServerData,
+            12 => MessageType::Lightstyle,
+            13 => MessageType::NqUpdateName,
+            14 => MessageType::UpdateFrags,
+            15 => MessageType::NqClientdata,
+            16 => MessageType::StopSound,
+            17 => MessageType::NqUpdateColors,
+            18 => MessageType::NqParticle,
+            19 => MessageType::Damage,
+            20 => MessageType::SpawnStatic,
+            21 => MessageType::FteSpawnStatic2,
+            22 => MessageType::SpawnBaseline,
+            23 => MessageType::TempEntity,
+            24 => MessageType::SetPause,
+            25 => MessageType::NqSignonnum,
+            26 => MessageType::CenterPrint,
+            27 => MessageType::Killedmonster,
+            28 => MessageType::FoundSecret,
+            29 => MessageType::SpawnStaticSound,
+            30 => MessageType::Intermission,
+            31 => MessageType::Finale,
+            32 => MessageType::Cdtrack,
+            33 => MessageType::Sellscreen,
+            34 => MessageType::Smallkick,
+            35 => MessageType::Bigkick,
+            36 => MessageType::UpdatePing,
+            37 => MessageType::UpdateEntertime,
+            38 => MessageType::UpdateStatLong,
+            39 => MessageType::Muzzleflash,
+            40 => MessageType::UpdateUserinfo,
+            41 => MessageType::Download,
+            42 => MessageType::Playerinfo,
+            43 => MessageType::Nails,
+            44 => MessageType::ChokeCount,
+            45 => MessageType::Modellist,
+            46 => MessageType::Soundlist,
+            47 => MessageType::Packetentities,
+            48 => MessageType::Deltapacketentities,
+            49 => MessageType::Maxspeed,
+            50 => MessageType::Entgravity,
+            51 => MessageType::Setinfo,
+            52 => MessageType::Serverinfo,
+            53 => MessageType::UpdatePl,
+            54 => MessageType::Nails2,
+            60 => MessageType::FteModellistshort,
+            66 => MessageType::FteSpawnbaseline2,
+            69 => MessageType::EndOfDemo,
+            83 => MessageType::QizmoVoice,
+            84 => MessageType::FteVoiceChat,
+            _ => MessageType::Unknown,
         }
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum HiddenMessage {
     AntilagPosition = 0x0000, // mvdhidden_antilag_position_header_t mvdhidden_antilag_position_t*
     Usercmd = 0x0001, // <byte: playernum> <byte:dropnum> <byte: msec, vec3_t: angles, short[3]: forward side up> <byte: buttons> <byte: impulse>
@@ -210,7 +211,7 @@ impl From<&u16> for HiddenMessage {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum PrintId {
     Low = 0,
     Medium = 1,
