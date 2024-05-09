@@ -1,7 +1,7 @@
 use std::io::Cursor;
 use std::ops::Range;
 
-use anyhow::Result;
+use anyhow::{anyhow as e, Result};
 
 use crate::mvd::io::ReadPrimitives;
 use crate::numsize;
@@ -49,6 +49,10 @@ impl Info {
         let header_size = cur.position() as usize;
         let size = header_size + body_size;
 
+        if data.len() < size {
+            return Err(e!("Frame is smaller than expected size"));
+        }
+
         Ok(Self {
             index,
             duration,
@@ -80,22 +84,34 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_info_from_data() -> Result<()> {
+    fn test_from_data_and_index() -> Result<()> {
         let data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
 
-        let expected = Info {
-            index: 456,
-            duration: 0,
-            target: Target::All,
-            command: Command::Read,
-            size: 743,
-            header_size: 6,
-            header_range: 456..462,
-            body_size: 737,
-            body_range: 462..1199,
-        };
+        {
+            assert_eq!(
+                Info::from_data_and_index(&data[0..10], 0)
+                    .unwrap_err()
+                    .to_string(),
+                "Frame is smaller than expected size".to_string()
+            );
+        }
 
-        assert_eq!(Info::from_data_and_index(&data, 456)?, expected);
+        {
+            assert_eq!(
+                Info::from_data_and_index(&data, 456)?,
+                Info {
+                    index: 456,
+                    duration: 0,
+                    target: Target::All,
+                    command: Command::Read,
+                    size: 743,
+                    header_size: 6,
+                    header_range: 456..462,
+                    body_size: 737,
+                    body_range: 462..1199,
+                }
+            );
+        }
 
         Ok(())
     }
