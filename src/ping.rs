@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 
-use anyhow::Result;
+use anyhow::{anyhow as e, Result};
 
 use crate::frame;
 use crate::mvd::message::io::ReadMessages;
@@ -45,7 +45,7 @@ pub fn pings(data: &[u8]) -> Result<HashMap<u8, u32>> {
     }
 
     if total_pings.is_empty() {
-        return Ok(HashMap::new());
+        return Err(e!("Unable to read pings"));
     }
 
     let mut average_ping: HashMap<u8, u32> = HashMap::new();
@@ -70,6 +70,12 @@ mod tests {
 
     #[test]
     fn test_pings() -> Result<()> {
+        {
+            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
+            let err = pings(&demo_data[0..15]).unwrap_err();
+            assert_eq!(err.to_string(), "Unable to read pings".to_string());
+        }
+
         {
             let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
             let pings = pings(&demo_data)?;
