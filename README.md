@@ -14,7 +14,7 @@ mvdparser::demo_duration(&data)      // Option<Duration>
 
 ### timestamp
 
-Gets timestamp - from `epoch` (preferred, found in serverinfo) _or_ from `matchdate`.
+Gets timestamp from `epoch` in serverinfo (preferred) _or_ from `matchdate` print.
 
 ```rust
 mvdparser::timestamp(&data) // Option<DateTime<Utc>>
