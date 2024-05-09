@@ -13,6 +13,9 @@ fn lib_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("lib");
     group.throughput(Throughput::Bytes(data.len() as u64));
 
+    group.bench_function("players", |b| b.iter(|| mvdparser::players(&data)));
+    group.bench_function("teams", |b| b.iter(|| mvdparser::teams(&data)));
+
     group.bench_function("pings", |b| b.iter(|| mvdparser::pings(&data)));
 
     group.bench_function("frags", |b| b.iter(|| mvdparser::frags(&data)));
