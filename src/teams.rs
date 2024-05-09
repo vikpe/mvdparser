@@ -3,16 +3,7 @@ use std::collections::HashMap;
 use anyhow::Result;
 
 use crate::players;
-use crate::players::Player;
-
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct Team {
-    pub name: String,
-    pub color: [u8; 2],
-    pub frags: i32,
-    pub ping: u32,
-    pub players: Vec<Player>,
-}
+use crate::team::Team;
 
 pub fn teams(data: &[u8]) -> Result<Vec<Team>> {
     let players = players(data)?;
@@ -45,6 +36,12 @@ pub fn teams(data: &[u8]) -> Result<Vec<Team>> {
 }
 
 fn majority_color(colors: &[[u8; 2]]) -> Option<[u8; 2]> {
+    match colors.len() {
+        0 => return None,
+        1 | 2 => return Some(colors[0]),
+        _ => {}
+    };
+
     let mut color_count: HashMap<[u8; 2], u8> = HashMap::new();
     for color in colors.iter() {
         let count = color_count.entry(*color).or_insert(0);
@@ -69,6 +66,8 @@ mod tests {
 
     use anyhow::Result;
     use pretty_assertions::assert_eq;
+
+    use crate::player::Player;
 
     use super::*;
 

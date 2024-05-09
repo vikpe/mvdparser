@@ -3,17 +3,8 @@ use std::collections::HashMap;
 use anyhow::Result;
 
 use crate::clients::clients;
+use crate::player::Player;
 use crate::{frags, pings};
-
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct Player {
-    pub name: String,
-    pub team: String,
-    pub color: [u8; 2],
-    pub frags: i32,
-    pub ping: u32,
-    pub is_bot: bool,
-}
 
 pub fn players(data: &[u8]) -> Result<Vec<Player>> {
     let clients = clients(data)?;
