@@ -29,6 +29,7 @@ pub mod all {
 }
 
 mod block;
+mod client;
 mod clientinfo;
 mod clients;
 mod duration;
