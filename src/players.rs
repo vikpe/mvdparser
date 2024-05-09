@@ -34,7 +34,7 @@ pub fn players(data: &[u8]) -> Result<Vec<Player>> {
     }
 
     let mut players: Vec<Player> = pmap.values().cloned().collect();
-    players.sort_by_key(|p| p.name.clone());
+    players.sort_by(|b, a| a.frags.cmp(&b.frags).then(b.name.cmp(&a.name)));
 
     Ok(players)
 }
@@ -81,19 +81,19 @@ mod tests {
                 players(&demo_data?)?,
                 vec![
                     Player {
-                        name: "HoLy".to_string(),
-                        team: "x".to_string(),
-                        color: [4, 4],
-                        frags: 25,
-                        ping: 25,
-                        is_bot: false,
-                    },
-                    Player {
                         name: "äáçï".to_string(),
                         team: "red".to_string(),
                         color: [4, 4],
                         frags: 31,
                         ping: 26,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "HoLy".to_string(),
+                        team: "x".to_string(),
+                        color: [4, 4],
+                        frags: 25,
+                        ping: 25,
                         is_bot: false,
                     },
                 ]
@@ -106,18 +106,10 @@ mod tests {
                 players(&demo_data?)?,
                 vec![
                     Player {
-                        name: "bar.........áøå".to_string(),
-                        team: "oeks".to_string(),
-                        color: [0, 1],
-                        frags: 27,
-                        ping: 26,
-                        is_bot: false,
-                    },
-                    Player {
-                        name: "conan".to_string(),
+                        name: "muttan".to_string(),
                         team: "tSÑ".to_string(),
                         color: [11, 10],
-                        frags: 71,
+                        frags: 89,
                         ping: 12,
                         is_bot: false,
                     },
@@ -130,6 +122,14 @@ mod tests {
                         is_bot: false,
                     },
                     Player {
+                        name: "conan".to_string(),
+                        team: "tSÑ".to_string(),
+                        color: [11, 10],
+                        frags: 71,
+                        ping: 12,
+                        is_bot: false,
+                    },
+                    Player {
                         name: "elguapo".to_string(),
                         team: "tSÑ".to_string(),
                         color: [11, 10],
@@ -138,11 +138,11 @@ mod tests {
                         is_bot: false,
                     },
                     Player {
-                        name: "muttan".to_string(),
-                        team: "tSÑ".to_string(),
-                        color: [11, 10],
-                        frags: 89,
-                        ping: 12,
+                        name: "tim.........áøå".to_string(),
+                        team: "oeks".to_string(),
+                        color: [0, 1],
+                        frags: 33,
+                        ping: 26,
                         is_bot: false,
                     },
                     Player {
@@ -154,10 +154,10 @@ mod tests {
                         is_bot: false,
                     },
                     Player {
-                        name: "tim.........áøå".to_string(),
+                        name: "bar.........áøå".to_string(),
                         team: "oeks".to_string(),
                         color: [0, 1],
-                        frags: 33,
+                        frags: 27,
                         ping: 26,
                         is_bot: false,
                     },
@@ -179,18 +179,18 @@ mod tests {
                 players(&demo_data?)?,
                 vec![
                     Player {
-                        name: "/ bro".to_string(),
+                        name: "/ tincan".to_string(),
                         team: "".to_string(),
-                        color: [0, 6],
-                        frags: 6,
+                        color: [10, 11],
+                        frags: 8,
                         ping: 10,
                         is_bot: true,
                     },
                     Player {
-                        name: "/ goldenboy".to_string(),
+                        name: "/ bro".to_string(),
                         team: "".to_string(),
-                        color: [3, 13],
-                        frags: 5,
+                        color: [0, 6],
+                        frags: 6,
                         ping: 10,
                         is_bot: true,
                     },
@@ -203,10 +203,10 @@ mod tests {
                         is_bot: true,
                     },
                     Player {
-                        name: "/ tincan".to_string(),
+                        name: "/ goldenboy".to_string(),
                         team: "".to_string(),
-                        color: [10, 11],
-                        frags: 8,
+                        color: [3, 13],
+                        frags: 5,
                         ping: 10,
                         is_bot: true,
                     },
