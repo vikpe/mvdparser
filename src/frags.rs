@@ -151,8 +151,17 @@ mod tests {
     #[test]
     fn test_frags() -> Result<()> {
         {
+            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
+            let frags_map = frags(&demo_data);
+            assert_eq!(frags_map.len(), 2);
+            assert_eq!(frags_map.get("eQu"), Some(&19));
+            assert_eq!(frags_map.get("KabÏÏm"), Some(&20));
+        }
+
+        {
             let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
             let frags_map = frags(&demo_data);
+            assert_eq!(frags_map.len(), 8);
             assert_eq!(frags_map.get("conan"), Some(&71));
             assert_eq!(frags_map.get("djevulsk"), Some(&74));
             assert_eq!(frags_map.get("elguapo"), Some(&60));
@@ -164,15 +173,9 @@ mod tests {
         }
 
         {
-            let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
-            let frags_map = frags(&demo_data);
-            assert_eq!(frags_map.get("HoLy"), Some(&25));
-            assert_eq!(frags_map.get("äáçï"), Some(&31));
-        }
-
-        {
             let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
             let frags_map = frags(&demo_data);
+            assert_eq!(frags_map.len(), 5);
             assert_eq!(frags_map.get("test"), Some(&4));
             assert_eq!(frags_map.get("/ bro"), Some(&6));
             assert_eq!(frags_map.get("/ goldenboy"), Some(&5));
