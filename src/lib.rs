@@ -13,6 +13,21 @@ pub use crate::serverinfo::{serverinfo, serverinfo_string};
 pub use crate::teams::teams;
 pub use crate::timestamp::timestamp;
 
+pub mod all {
+    pub use crate::clientinfo::*;
+    pub use crate::clients::*;
+    pub use crate::duration::*;
+    pub use crate::frags::*;
+    pub use crate::ktxstats::*;
+    pub use crate::matchdate::*;
+    pub use crate::ping::*;
+    pub use crate::players::*;
+    pub use crate::prints::*;
+    pub use crate::serverinfo::*;
+    pub use crate::teams::*;
+    pub use crate::timestamp::*;
+}
+
 mod block;
 mod clientinfo;
 mod clients;
