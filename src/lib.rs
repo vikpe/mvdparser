@@ -10,6 +10,7 @@ pub use crate::ping::pings;
 pub use crate::players::players;
 pub use crate::prints::prints;
 pub use crate::serverinfo::{serverinfo, serverinfo_string};
+pub use crate::teams::teams;
 pub use crate::timestamp::timestamp;
 
 mod block;
@@ -28,6 +29,7 @@ mod ping;
 mod prints;
 mod qw;
 mod serverinfo;
+mod teams;
 mod timestamp;
 mod timezone;
 mod util;
