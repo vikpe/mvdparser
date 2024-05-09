@@ -7,6 +7,7 @@ pub use crate::frags::frags;
 pub use crate::ktxstats::{ktxstats_string, ktxstats_v3};
 pub use crate::matchdate::{matchdate, matchdate_string};
 pub use crate::ping::pings;
+pub use crate::players::players;
 pub use crate::prints::prints;
 pub use crate::serverinfo::{serverinfo, serverinfo_string};
 pub use crate::timestamp::timestamp;
