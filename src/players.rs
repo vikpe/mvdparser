@@ -1,12 +1,25 @@
 use std::collections::HashMap;
 
-use anyhow::Result;
+use anyhow::{anyhow as e, Result};
 
 use crate::clients::clients;
 use crate::player::Player;
-use crate::{frags, pings};
+use crate::{frags, ktxstats_v3, pings, player};
 
 pub fn players(data: &[u8]) -> Result<Vec<Player>> {
+    players_from_ktxstats(data).or_else(|_| players_from_parsing(data))
+}
+
+pub fn players_from_ktxstats(data: &[u8]) -> Result<Vec<Player>> {
+    let Some(stats) = ktxstats_v3(data) else {
+        return Err(e!("Failed to parse ktxstats"));
+    };
+    let mut players: Vec<Player> = stats.players.iter().map(Player::from).collect();
+    players.sort_by(player::sort());
+    Ok(players)
+}
+
+pub fn players_from_parsing(data: &[u8]) -> Result<Vec<Player>> {
     let clients = clients(data)?;
     let pings = pings(data)?;
     let frags = frags(data);
@@ -25,8 +38,7 @@ pub fn players(data: &[u8]) -> Result<Vec<Player>> {
     }
 
     let mut players: Vec<Player> = pmap.values().cloned().collect();
-    players.sort_by(|b, a| a.frags.cmp(&b.frags).then(b.name.cmp(&a.name)));
-
+    players.sort_by(player::sort());
     Ok(players)
 }
 
@@ -42,9 +54,60 @@ mod tests {
     #[test]
     fn test_players() -> Result<()> {
         {
+            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
+            let from_parsing = players_from_parsing(&demo_data)?;
+            let from_ktx = players_from_ktxstats(&demo_data)?;
+
+            assert_eq!(from_parsing.len(), from_ktx.len());
+            for n in 0..from_parsing.len() {
+                assert_eq!(from_parsing[n].frags, from_ktx[n].frags);
+                assert_eq!(from_parsing[n].name, from_ktx[n].name);
+                assert_eq!(from_parsing[n].team, from_ktx[n].team);
+                assert_eq!(from_parsing[n].color, from_ktx[n].color);
+                assert!(from_parsing[n].ping.abs_diff(from_ktx[n].ping) < 5);
+                assert_eq!(from_parsing[n].is_bot, from_ktx[n].is_bot);
+            }
+        }
+        {
+            let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
+            let from_parsing = players_from_parsing(&demo_data)?;
+            let from_ktx = players_from_ktxstats(&demo_data)?;
+
+            assert_eq!(from_parsing.len(), from_ktx.len());
+            for n in 0..from_parsing.len() {
+                assert_eq!(from_parsing[n].frags, from_ktx[n].frags);
+                assert_eq!(from_parsing[n].name, from_ktx[n].name);
+                assert_eq!(from_parsing[n].team, from_ktx[n].team);
+                assert_eq!(from_parsing[n].color, from_ktx[n].color);
+                assert!(from_parsing[n].ping.abs_diff(from_ktx[n].ping) < 5);
+                assert_eq!(from_parsing[n].is_bot, from_ktx[n].is_bot);
+            }
+        }
+        {
+            let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
+            let from_parsing = players_from_parsing(&demo_data)?;
+            let from_ktx = players_from_ktxstats(&demo_data)?;
+
+            assert_eq!(from_parsing.len(), from_ktx.len());
+            for n in 0..from_parsing.len() {
+                assert_eq!(from_parsing[n].frags, from_ktx[n].frags);
+                assert_eq!(from_parsing[n].name, from_ktx[n].name);
+                assert_eq!(from_parsing[n].team, from_ktx[n].team);
+                assert_eq!(from_parsing[n].color, from_ktx[n].color);
+                assert!(from_parsing[n].ping.abs_diff(from_ktx[n].ping) < 5);
+                assert_eq!(from_parsing[n].is_bot, from_ktx[n].is_bot);
+            }
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_players_from_parsing() -> Result<()> {
+        {
             let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd");
             assert_eq!(
-                players(&demo_data?)?,
+                players_from_parsing(&demo_data?)?,
                 vec![
                     Player {
                         name: "KabÏÏm".to_string(),
@@ -65,11 +128,10 @@ mod tests {
                 ]
             );
         }
-
         {
             let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd");
             assert_eq!(
-                players(&demo_data?)?,
+                players_from_parsing(&demo_data?)?,
                 vec![
                     Player {
                         name: "äáçï".to_string(),
@@ -90,11 +152,10 @@ mod tests {
                 ]
             );
         }
-
         {
             let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd");
             assert_eq!(
-                players(&demo_data?)?,
+                players_from_parsing(&demo_data?)?,
                 vec![
                     Player {
                         name: "muttan".to_string(),
@@ -163,11 +224,10 @@ mod tests {
                 ]
             );
         }
-
         {
             let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd");
             assert_eq!(
-                players(&demo_data?)?,
+                players_from_parsing(&demo_data?)?,
                 vec![
                     Player {
                         name: "/ tincan".to_string(),

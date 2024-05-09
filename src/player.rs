@@ -1,4 +1,4 @@
-use ktxstats::v3;
+use std::cmp::Ordering;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Player {
@@ -10,8 +10,8 @@ pub struct Player {
     pub is_bot: bool,
 }
 
-impl From<&v3::Player> for Player {
-    fn from(player: &v3::Player) -> Self {
+impl From<&ktxstats::v3::Player> for Player {
+    fn from(player: &ktxstats::v3::Player) -> Self {
         Self {
             name: player.name.clone(),
             team: player.team.clone(),
@@ -23,6 +23,10 @@ impl From<&v3::Player> for Player {
     }
 }
 
+pub fn sort() -> fn(&Player, &Player) -> Ordering {
+    |b, a| a.frags.cmp(&b.frags).then(b.name.cmp(&a.name))
+}
+
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
@@ -31,10 +35,10 @@ mod tests {
 
     #[test]
     fn test_player_from_ktxplayer() {
-        let ktxplayer = v3::Player {
+        let ktxplayer = ktxstats::v3::Player {
             name: "Alpha".to_string(),
             team: "red".to_string(),
-            stats: v3::PlayerStats {
+            stats: ktxstats::v3::PlayerStats {
                 frags: 54,
                 ..Default::default()
             },

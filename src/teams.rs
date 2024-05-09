@@ -113,7 +113,7 @@ mod tests {
                                 team: "tSÑ".to_string(),
                                 color: [11, 10,],
                                 frags: 60,
-                                ping: 12,
+                                ping: 13,
                                 is_bot: false,
                             },
                         ],
@@ -122,7 +122,7 @@ mod tests {
                         name: "oeks".to_string(),
                         color: [0, 1,],
                         frags: 118,
-                        ping: 27,
+                        ping: 26,
                         players: vec![
                             Player {
                                 name: "tim.........áøå".to_string(),
@@ -145,7 +145,7 @@ mod tests {
                                 team: "oeks".to_string(),
                                 color: [0, 1,],
                                 frags: 27,
-                                ping: 26,
+                                ping: 25,
                                 is_bot: false,
                             },
                             Player {
