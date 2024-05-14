@@ -10,17 +10,30 @@ pub fn clientinfo(data: &[u8]) -> Result<Vec<Clientinfo>> {
     Ok(info)
 }
 
-// find strings between "\" and [0] appearing after "cmd spawn"
-fn clientinfo_strings(data: &[u8]) -> Result<Vec<String>> {
-    let Some(mut offset) = data.find(b"cmd spawn") else {
+pub fn clientinfo_strings(data: &[u8]) -> Result<Vec<String>> {
+    const CMD_SPAWN: [u8; 0x0A] = [0x09, 0x63, 0x6D, 0x64, 0x20, 0x73, 0x70, 0x61, 0x77, 0x6E];
+
+    let Some(mut offset) = data.find(CMD_SPAWN) else {
         return Err(e!("Unable to find clientinfo strings"));
     };
-    const MIN_LEN: usize = r#"\client\ "#.len();
-    const MAX_LEN: usize = 150;
+
+    const MAX_PLAYERS: usize = 24;
+    const MAX_LOOKAHEAD: usize = 256;
+    let max_offset: usize = offset + MAX_PLAYERS * MAX_LOOKAHEAD;
+    const MIN_LEN: usize = r#"\name\ "#.len();
+    const MAX_LEN: usize = 128;
+
     let mut result: Vec<String> = vec![];
 
-    while let Some(from) = data[offset..].find(br#"\"#).map(|o| offset + o) {
-        let Some(to) = data[from..].find([0]).map(|o| from + o) else {
+    while let Some(name_offset) = data[offset..offset + MAX_LOOKAHEAD]
+        .find(br#"\name\"#)
+        .map(|o| offset + o)
+    {
+        let Some(from) = data[..name_offset].rfind_byte(0).map(|o| o + 1) else {
+            break;
+        };
+
+        let Some(to) = data[from..].find_byte(0).map(|o| from + o) else {
             break;
         };
 
@@ -30,6 +43,10 @@ fn clientinfo_strings(data: &[u8]) -> Result<Vec<String>> {
 
         result.push(quake_text::bytestr::to_unicode(&data[from..to]));
         offset = to;
+
+        if offset >= max_offset {
+            break;
+        }
     }
 
     Ok(result)
@@ -89,6 +106,19 @@ mod tests {
 
     #[test]
     fn test_clientinfo_strings() -> Result<()> {
+        assert_eq!(
+            clientinfo_strings(&read(
+                "tests/files/2on2_sf_vs_red[frobodm2]220104-0915.mvd"
+            )?)?,
+            vec![
+                r#"\chat\1\*client\ezQuake 7034\bottomcolor\4\topcolor\0\team\=SF=\name\Final"#,
+                r#"\team\red\*bot\1\bottomcolor\4\topcolor\4\skin\base\name\: Timber"#,
+                r#"\*client\libqwclient 0.1\*spectator\1\bottomcolor\11\topcolor\12\team\lqwc\name\[ServeMe]"#,
+                r#"\team\=SF=\*bot\1\bottomcolor\4\topcolor\0\skin\base\name\> MrJustice"#,
+                r#"\team\red\*bot\1\bottomcolor\4\topcolor\4\skin\base\name\: Sujoy"#,
+            ]
+        );
+
         assert_eq!(
             clientinfo_strings(&read("tests/files/ffa_5[dm4]20240501-1229.mvd")?)?,
             vec![
