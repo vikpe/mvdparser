@@ -105,6 +105,46 @@ mod tests {
     #[test]
     fn test_players_from_parsing() -> Result<()> {
         {
+            let demo_data = read("tests/files/2on2_sf_vs_red[frobodm2]220104-0915.mvd");
+            assert_eq!(
+                players_from_parsing(&demo_data?)?,
+                vec![
+                    Player {
+                        name: ": Timber".to_string(),
+                        team: "red".to_string(),
+                        color: [4, 4],
+                        frags: 13,
+                        ping: 10,
+                        is_bot: true,
+                    },
+                    Player {
+                        name: ": Sujoy".to_string(),
+                        team: "red".to_string(),
+                        color: [4, 4],
+                        frags: 7,
+                        ping: 10,
+                        is_bot: true,
+                    },
+                    Player {
+                        name: "Final".to_string(),
+                        team: "=SF=".to_string(),
+                        color: [0, 4],
+                        frags: 1,
+                        ping: 51,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "> MrJustice".to_string(),
+                        team: "=SF=".to_string(),
+                        color: [0, 4],
+                        frags: -5,
+                        ping: 10,
+                        is_bot: true,
+                    },
+                ]
+            );
+        }
+        {
             let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd");
             assert_eq!(
                 players_from_parsing(&demo_data?)?,
