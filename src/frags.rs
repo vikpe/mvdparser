@@ -3,8 +3,6 @@ use std::io::Cursor;
 
 use anyhow::{anyhow as e, Result};
 
-use fragfile::FragEvent;
-
 use crate::mvd::message::io::ReadMessages;
 use crate::mvd::message::print::ReadPrint;
 use crate::mvd::message::update_frags::ReadUpdateFrags;
@@ -43,31 +41,31 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
     for (print, frame_info) in print_frames {
         let content_u = quake_text::bytestr::to_unicode(&print.content);
 
-        match FragEvent::try_from(content_u.trim_end()) {
+        match fragfile::Event::try_from(content_u.trim_end()) {
             Ok(event) => {
                 //println!("{:?}", event);
                 match event {
-                    FragEvent::Frag { killer, .. } => {
+                    fragfile::Event::Frag { killer, .. } => {
                         let killer = frags.entry(killer).or_insert(0);
                         *killer += 1;
                     }
-                    FragEvent::Death { player } => {
+                    fragfile::Event::Death { player } => {
                         let player = frags.entry(player).or_insert(0);
                         *player -= 1;
                     }
-                    FragEvent::Suicide { player } => {
+                    fragfile::Event::Suicide { player } => {
                         let player = frags.entry(player).or_insert(0);
                         *player -= 2;
                     }
-                    FragEvent::SuicideByWeapon { player } => {
+                    fragfile::Event::SuicideByWeapon { player } => {
                         let player = frags.entry(player).or_insert(0);
                         *player -= 1;
                     }
-                    FragEvent::Teamkill { killer } => {
+                    fragfile::Event::Teamkill { killer } => {
                         let killer = frags.entry(killer).or_insert(0);
                         *killer -= 1;
                     }
-                    FragEvent::TeamkillByUnknown { victim } => {
+                    fragfile::Event::TeamkillByUnknown { victim } => {
                         if let Ok(name) = find_team_killer(data, frame_info.index, &victim) {
                             // println!("KILLER: {:?} -> {}", content_u, name);
                             let killer = frags.entry(name).or_insert(0);
