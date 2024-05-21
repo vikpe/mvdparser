@@ -315,4 +315,121 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_players_from_ktxstats() -> Result<()> {
+        {
+            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd");
+            assert_eq!(
+                players_from_ktxstats(&demo_data?)?,
+                vec![
+                    Player {
+                        name: "KabÏÏm".to_string(),
+                        team: "".to_string(),
+                        color: [2, 2],
+                        frags: 20,
+                        ping: 25,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "eQu".to_string(),
+                        team: "red".to_string(),
+                        color: [4, 4],
+                        frags: 19,
+                        ping: 26,
+                        is_bot: false,
+                    },
+                ]
+            );
+        }
+        {
+            let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd");
+            assert_eq!(
+                players_from_ktxstats(&demo_data?)?,
+                vec![
+                    Player {
+                        name: "ì÷ú\u{ad}velocity".to_string(),
+                        team: "red".to_string(),
+                        color: [4, 4],
+                        frags: 164,
+                        ping: 33,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "ì÷ú\u{ad}lethalwiz".to_string(),
+                        team: "red".to_string(),
+                        color: [4, 4],
+                        frags: 140,
+                        ping: 12,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "ì÷ú\u{ad}xunito".to_string(),
+                        team: "red".to_string(),
+                        color: [4, 4],
+                        frags: 128,
+                        ping: 42,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "lwz-brunelson".to_string(),
+                        team: "red".to_string(),
+                        color: [4, 4],
+                        frags: 120,
+                        ping: 77,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "ì÷ú\u{ad}lag".to_string(),
+                        team: "red".to_string(),
+                        color: [4, 4],
+                        frags: 118,
+                        ping: 40,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "\u{10}CCT\u{11}\u{9c}ãáöåòïî".to_string(),
+                        team: "blue".to_string(),
+                        color: [13, 13],
+                        frags: 29,
+                        ping: 16,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "\u{10}CCT\u{11}\u{9c}âéìì".to_string(),
+                        team: "blue".to_string(),
+                        color: [13, 13],
+                        frags: 23,
+                        ping: 12,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "\u{10}CCT\u{11}\u{9c}Óèéîéîç".to_string(),
+                        team: "blue".to_string(),
+                        color: [13, 13],
+                        frags: 19,
+                        ping: 12,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "\u{10}CCT\u{11}\u{9c}äêåöõìóë".to_string(),
+                        team: "blue".to_string(),
+                        color: [13, 13],
+                        frags: 15,
+                        ping: 12,
+                        is_bot: false,
+                    },
+                    Player {
+                        name: "\u{10}CCT\u{11}\u{9c}Èåíìïãë".to_string(),
+                        team: "blue".to_string(),
+                        color: [13, 13],
+                        frags: 10,
+                        ping: 46,
+                        is_bot: false,
+                    },
+                ]
+            );
+        }
+        Ok(())
+    }
 }
