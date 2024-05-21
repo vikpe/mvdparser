@@ -117,6 +117,13 @@ mod tests {
             Some("2024-04-26 17:16:13 CEST".to_string())
         );
 
+        assert_eq!(
+            matchdate_string(&std::fs::read(
+                "tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd"
+            )?),
+            Some("2024-05-20 19:25:42 UTC".to_string())
+        );
+
         Ok(())
     }
 }

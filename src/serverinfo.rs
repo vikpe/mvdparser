@@ -67,6 +67,13 @@ mod tests {
     #[test]
     fn test_serverinfo_string() -> Result<()> {
         assert_eq!(
+            serverinfo_string(&read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?),
+            Some(
+                r#"\maxfps\77\pm_ktjump\1\*version\MVDSV 1.01-dev\*z_ext\511\maxspectators\12\*gamedir\qw\sv_antilag\2\*admin\ERRH @ https://discord.quake.world\ktxver\1.44-dev\mode\1on1\maxclients\2\timelimit\3\deathmatch\4\hostname\de.quake.world:27502 [QW-Group]\fpd\142\*qvm\so\*progs\so\map\povdmm4\status\Countdown\serverdemo\duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd\epoch\1713782300"#.to_string()
+            )
+        );
+
+        assert_eq!(
             serverinfo_string(&read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?),
             Some(
                 r#"\maxfps\77\pm_ktjump\1\*version\MVDSV 0.36\*z_ext\511\*admin\suom1 <suom1@irc.ax>\ktxver\1.42\sv_antilag\2\maxspectators\12\*gamedir\qw\timelimit\10\deathmatch\3\mode\1on1\hostname\QUAKE.SE KTX:28501\fpd\142\*qvm\so\*progs\so\maxclients\2\map\bravado\status\Countdown\serverdemo\duel_holy_vs_dago[bravado]20240426-1659.mvd"#.to_string()
@@ -81,9 +88,9 @@ mod tests {
         );
 
         assert_eq!(
-            serverinfo_string(&read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?),
+            serverinfo_string(&read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?),
             Some(
-                r#"\maxfps\77\pm_ktjump\1\*version\MVDSV 1.01-dev\*z_ext\511\maxspectators\12\*gamedir\qw\sv_antilag\2\*admin\ERRH @ https://discord.quake.world\ktxver\1.44-dev\mode\1on1\maxclients\2\timelimit\3\deathmatch\4\hostname\de.quake.world:27502 [QW-Group]\fpd\142\*qvm\so\*progs\so\map\povdmm4\status\Countdown\serverdemo\duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd\epoch\1713782300"#.to_string()
+                r#"\maxfps\77\pm_ktjump\1\*version\MVDSV 1.01-dev\*z_ext\511\maxspectators\12\*admin\QuakeWorld CTF Discord <tag@discord>\ktxver\1.43-dev\sv_antilag\2\mode\ctf\*gamedir\qw\teamplay\4\deathmatch\3\fpd\142\maxclients\16\watervis\1\timelimit\10\hostname\qwctf.se:28501\*qvm\so\*progs\so\map\ctf5\status\Countdown\serverdemo\ctf_blue_vs_red[ctf5]20240520-1925.mvd\epoch\1716233132"#.to_string()
             )
         );
 

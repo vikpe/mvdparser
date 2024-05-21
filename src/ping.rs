@@ -71,8 +71,8 @@ mod tests {
     #[test]
     fn test_pings() -> Result<()> {
         {
-            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
-            let err = pings(&demo_data[0..15]).unwrap_err();
+            let demo_data: [u8; 10] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+            let err = pings(&demo_data).unwrap_err();
             assert_eq!(err.to_string(), "Unable to read pings".to_string());
         }
 
@@ -96,6 +96,19 @@ mod tests {
             assert_eq!(pings.get(&6), Some(&12));
             assert_eq!(pings.get(&7), Some(&12));
             assert_eq!(pings.get(&8), Some(&12));
+        }
+
+        {
+            let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd");
+            let pings = pings(&demo_data?)?;
+            assert_eq!(pings.get(&0), Some(&19));
+            assert_eq!(pings.get(&1), Some(&12));
+            assert_eq!(pings.get(&2), Some(&30));
+            assert_eq!(pings.get(&3), Some(&12));
+            assert_eq!(pings.get(&4), Some(&13));
+            assert_eq!(pings.get(&5), Some(&50));
+            assert_eq!(pings.get(&6), Some(&39));
+            assert_eq!(pings.get(&7), Some(&12));
         }
 
         {

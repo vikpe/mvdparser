@@ -83,6 +83,10 @@ mod tests {
             Some(Duration::from_secs_f32(10.113)),
         );
         assert_eq!(
+            countdown_duration(&read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?),
+            Some(Duration::from_secs_f32(10.103)),
+        );
+        assert_eq!(
             countdown_duration(&read(
                 "tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd"
             )?),
@@ -114,6 +118,10 @@ mod tests {
             Some(Duration::from_secs_f32(1210.142)),
         );
         assert_eq!(
+            demo_duration(&read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?),
+            Some(Duration::from_secs_f32(610.214)),
+        );
+        assert_eq!(
             demo_duration(&read(
                 "tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd"
             )?),
@@ -143,6 +151,10 @@ mod tests {
         assert_eq!(
             match_duration(&read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?),
             Some(Duration::from_secs(1200)),
+        );
+        assert_eq!(
+            match_duration(&read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?),
+            Some(Duration::from_secs(600)),
         );
         assert_eq!(
             match_duration(&read(
