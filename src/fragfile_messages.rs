@@ -62,7 +62,7 @@ pub const X_FRAG_Y: [&str; 3] = [
     r#" rips "??" a new one"#,
 ];
 
-pub const Y_FRAG_X: [&str; 27] = [
+pub const Y_FRAG_X: [&str; 28] = [
     r#" was ax-murdered by "#,
     r#" softens "??"'s fall"#,
     r#" tried to catch "#,
@@ -90,4 +90,14 @@ pub const Y_FRAG_X: [&str; 27] = [
     r#" was gibbed by "??"'s grenade"#,
     r#" was brutalized by "??"'s quad rocket"#,
     r#" was smeared by "??"'s quad rocket"#,
+    r#" was hooked by "#,
 ];
+
+pub const X_CAPTURE_FLAG: [&str; 2] = [" captured the RED flag!", " captured the BLUE flag!"];
+
+pub const X_ASSIST_FLAG: [&str; 2] = [
+    " gets an assist for returning his flag!",
+    " gets an assist for fragging the flag carrier!",
+];
+
+pub const X_RETURN_FLAG: [&str; 2] = [" returned the RED flag!", " returned the BLUE flag!"];

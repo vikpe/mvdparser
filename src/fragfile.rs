@@ -1,8 +1,8 @@
 use anyhow::{anyhow as e, Result};
 
 use crate::fragfile_messages::{
-    UNKNOWN_TEAMKILL_X, WILDCARD, X_DEATH, X_FRAG_Y, X_SUICIDE, X_SUICIDE_BY_WEAPON,
-    X_TEAMKILL_UNKNOWN, Y_FRAG_X,
+    UNKNOWN_TEAMKILL_X, WILDCARD, X_ASSIST_FLAG, X_CAPTURE_FLAG, X_DEATH, X_FRAG_Y, X_RETURN_FLAG,
+    X_SUICIDE, X_SUICIDE_BY_WEAPON, X_TEAMKILL_UNKNOWN, Y_FRAG_X,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -13,6 +13,14 @@ pub enum FragEvent {
     Frag { killer: String, victim: String },
     Teamkill { killer: String },
     TeamkillByUnknown { victim: String },
+    FlagAlert { player: String, event: FlagEvent },
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum FlagEvent {
+    Assist,
+    Capture,
+    Return,
 }
 
 impl TryFrom<&str> for FragEvent {
@@ -38,6 +46,21 @@ impl TryFrom<&str> for FragEvent {
         } else if let Some(p) = UNKNOWN_TEAMKILL_X.iter().find(|&p| value.ends_with(p)) {
             return Ok(FragEvent::TeamkillByUnknown {
                 victim: value.trim_end_matches(p).to_string(),
+            });
+        } else if let Some(p) = X_CAPTURE_FLAG.iter().find(|&p| value.ends_with(p)) {
+            return Ok(FragEvent::FlagAlert {
+                player: value.trim_end_matches(p).to_string(),
+                event: FlagEvent::Capture,
+            });
+        } else if let Some(p) = X_ASSIST_FLAG.iter().find(|&p| value.ends_with(p)) {
+            return Ok(FragEvent::FlagAlert {
+                player: value.trim_end_matches(p).to_string(),
+                event: FlagEvent::Assist,
+            });
+        } else if let Some(p) = X_RETURN_FLAG.iter().find(|&p| value.ends_with(p)) {
+            return Ok(FragEvent::FlagAlert {
+                player: value.trim_end_matches(p).to_string(),
+                event: FlagEvent::Return,
             });
         }
 
@@ -212,6 +235,50 @@ mod tests {
             (r#"FOO was gibbed by BAR's grenade"#, bar_frag_foo()),
             (r#"FOO was brutalized by BAR's quad rocket"#, bar_frag_foo()),
             (r#"FOO was smeared by BAR's quad rocket"#, bar_frag_foo()),
+            (r#"FOO was hooked by BAR"#, bar_frag_foo()),
+            // x captures flag
+            (
+                "FOO captured the RED flag!",
+                Ok(FragEvent::FlagAlert {
+                    player: "FOO".to_string(),
+                    event: FlagEvent::Capture,
+                }),
+            ),
+            (
+                "FOO captured the BLUE flag!",
+                Ok(FragEvent::FlagAlert {
+                    player: "FOO".to_string(),
+                    event: FlagEvent::Capture,
+                }),
+            ),
+            (
+                "FOO gets an assist for returning his flag!",
+                Ok(FragEvent::FlagAlert {
+                    player: "FOO".to_string(),
+                    event: FlagEvent::Assist,
+                }),
+            ),
+            (
+                "FOO gets an assist for fragging the flag carrier!",
+                Ok(FragEvent::FlagAlert {
+                    player: "FOO".to_string(),
+                    event: FlagEvent::Assist,
+                }),
+            ),
+            (
+                "FOO returned the RED flag!",
+                Ok(FragEvent::FlagAlert {
+                    player: "FOO".to_string(),
+                    event: FlagEvent::Return,
+                }),
+            ),
+            (
+                "FOO returned the BLUE flag!",
+                Ok(FragEvent::FlagAlert {
+                    player: "FOO".to_string(),
+                    event: FlagEvent::Return,
+                }),
+            ),
         ]);
 
         for (input, expected) in test_cases {
