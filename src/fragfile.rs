@@ -1,9 +1,9 @@
 use anyhow::{anyhow as e, Result};
 
 use crate::fragfile_messages::{
-    UNKNOWN_TEAMKILL_X, WILDCARD, X_ASSIST_RETURN_FLAG, X_CAPTURE_FLAG, X_DEATH,
-    X_DEFEND_CARRIER_VS_AGGRESSIVE, X_DEFEND_FLAG, X_FRAG_Y, X_RETURN_FLAG, X_SUICIDE,
-    X_SUICIDE_BY_WEAPON, X_TEAMKILL_UNKNOWN, Y_FRAG_X,
+    UNKNOWN_TEAMKILL_X, WILDCARD, X_CAPTURE_FLAG, X_DEATH, X_DEFEND_CARRIER,
+    X_DEFEND_CARRIER_VS_AGGRESSIVE, X_DEFEND_FLAG, X_FRAG_Y, X_RETURN_FLAG, X_RETURN_FLAG_ASSIST,
+    X_SUICIDE, X_SUICIDE_BY_WEAPON, X_TEAMKILL_UNKNOWN, Y_FRAG_X,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -21,9 +21,10 @@ pub enum Event {
 pub enum FlagEvent {
     Capture,
     Defend,
-    DefendVsAggressive,
-    Return,
-    ReturnAssist,
+    DefendCarrier,
+    DefendCarrierVsAggressive,
+    ReturnFlag,
+    ReturnFlagAssist,
 }
 
 impl TryFrom<&str> for Event {
@@ -67,20 +68,25 @@ impl TryFrom<&str> for Event {
                 player: value.trim_end_matches(p).to_string(),
                 event: FlagEvent::Capture,
             });
-        } else if let Some(p) = X_ASSIST_RETURN_FLAG.iter().find(|&p| value.ends_with(p)) {
+        } else if let Some(p) = X_RETURN_FLAG_ASSIST.iter().find(|&p| value.ends_with(p)) {
             return Ok(Event::FlagAlert {
                 player: value.trim_end_matches(p).to_string(),
-                event: FlagEvent::ReturnAssist,
+                event: FlagEvent::ReturnFlagAssist,
             });
         } else if let Some(p) = X_RETURN_FLAG.iter().find(|&p| value.ends_with(p)) {
             return Ok(Event::FlagAlert {
                 player: value.trim_end_matches(p).to_string(),
-                event: FlagEvent::Return,
+                event: FlagEvent::ReturnFlag,
             });
         } else if let Some(p) = X_DEFEND_FLAG.iter().find(|&p| value.ends_with(p)) {
             return Ok(Event::FlagAlert {
                 player: value.trim_end_matches(p).to_string(),
                 event: FlagEvent::Defend,
+            });
+        } else if let Some(p) = X_DEFEND_CARRIER.iter().find(|&p| value.ends_with(p)) {
+            return Ok(Event::FlagAlert {
+                player: value.trim_end_matches(p).to_string(),
+                event: FlagEvent::DefendCarrier,
             });
         } else if let Some(p) = X_DEFEND_CARRIER_VS_AGGRESSIVE
             .iter()
@@ -88,7 +94,7 @@ impl TryFrom<&str> for Event {
         {
             return Ok(Event::FlagAlert {
                 player: value.trim_end_matches(p).to_string(),
-                event: FlagEvent::DefendVsAggressive,
+                event: FlagEvent::DefendCarrierVsAggressive,
             });
         }
 
@@ -288,42 +294,42 @@ mod tests {
                 "FOO gets an assist for returning his flag!",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
-                    event: FlagEvent::ReturnAssist,
+                    event: FlagEvent::ReturnFlagAssist,
                 }),
             ),
             (
                 "FOO gets an assist for fragging the flag carrier!",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
-                    event: FlagEvent::ReturnAssist,
+                    event: FlagEvent::ReturnFlagAssist,
                 }),
             ),
             (
                 "FOO returned the RED flag!",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
-                    event: FlagEvent::Return,
+                    event: FlagEvent::ReturnFlag,
                 }),
             ),
             (
                 "FOO returned the ÒÅÄ flag!",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
-                    event: FlagEvent::Return,
+                    event: FlagEvent::ReturnFlag,
                 }),
             ),
             (
                 "FOO returned the BLUE flag!",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
-                    event: FlagEvent::Return,
+                    event: FlagEvent::ReturnFlag,
                 }),
             ),
             (
                 "FOO returned the ÂÌÕÅ flag!",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
-                    event: FlagEvent::Return,
+                    event: FlagEvent::ReturnFlag,
                 }),
             ),
             (
@@ -348,31 +354,59 @@ mod tests {
                 }),
             ),
             (
+                "FOO defends RED's flag carrier",
+                Ok(Event::FlagAlert {
+                    player: "FOO".to_string(),
+                    event: FlagEvent::DefendCarrier,
+                }),
+            ),
+            (
+                "FOO defends ÒÅÄ's flag carrier",
+                Ok(Event::FlagAlert {
+                    player: "FOO".to_string(),
+                    event: FlagEvent::DefendCarrier,
+                }),
+            ),
+            (
+                "FOO defends BLUE's flag carrier",
+                Ok(Event::FlagAlert {
+                    player: "FOO".to_string(),
+                    event: FlagEvent::DefendCarrier,
+                }),
+            ),
+            (
+                "FOO defends ÂÌÕÅ's flag carrier",
+                Ok(Event::FlagAlert {
+                    player: "FOO".to_string(),
+                    event: FlagEvent::DefendCarrier,
+                }),
+            ),
+            (
                 "FOO defends RED's flag carrier against an aggressive enemy",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
-                    event: FlagEvent::DefendVsAggressive,
+                    event: FlagEvent::DefendCarrierVsAggressive,
                 }),
             ),
             (
                 "FOO defends ÒÅÄ's flag carrier against an aggressive enemy",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
-                    event: FlagEvent::DefendVsAggressive,
+                    event: FlagEvent::DefendCarrierVsAggressive,
                 }),
             ),
             (
                 "FOO defends BLUE's flag carrier against an aggressive enemy",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
-                    event: FlagEvent::DefendVsAggressive,
+                    event: FlagEvent::DefendCarrierVsAggressive,
                 }),
             ),
             (
                 "FOO defends ÂÌÕÅ's flag carrier against an aggressive enemy",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
-                    event: FlagEvent::DefendVsAggressive,
+                    event: FlagEvent::DefendCarrierVsAggressive,
                 }),
             ),
         ]);

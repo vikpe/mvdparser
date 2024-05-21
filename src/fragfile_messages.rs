@@ -100,7 +100,7 @@ pub const X_CAPTURE_FLAG: [&str; 4] = [
     " captured the ÂÌÕÅ flag!",
 ];
 
-pub const X_ASSIST_RETURN_FLAG: [&str; 2] = [
+pub const X_RETURN_FLAG_ASSIST: [&str; 2] = [
     " gets an assist for returning his flag!",
     " gets an assist for fragging the flag carrier!",
 ];
@@ -117,6 +117,13 @@ pub const X_DEFEND_FLAG: [&str; 4] = [
     " defends the ÒÅÄ flag",
     " defends the BLUE flag",
     " defends the ÂÌÕÅ flag",
+];
+
+pub const X_DEFEND_CARRIER: [&str; 4] = [
+    " defends RED's flag carrier",
+    " defends ÒÅÄ's flag carrier",
+    " defends BLUE's flag carrier",
+    " defends ÂÌÕÅ's flag carrier",
 ];
 
 pub const X_DEFEND_CARRIER_VS_AGGRESSIVE: [&str; 4] = [
