@@ -159,6 +159,14 @@ mod tests {
         }
 
         {
+            let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
+            let frags_map = frags(&demo_data);
+            assert_eq!(frags_map.len(), 2);
+            assert_eq!(frags_map.get("HoLy"), Some(&25));
+            assert_eq!(frags_map.get("äáçï"), Some(&31));
+        }
+
+        {
             let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
             let frags_map = frags(&demo_data);
             assert_eq!(frags_map.len(), 8);
