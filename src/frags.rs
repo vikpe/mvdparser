@@ -74,6 +74,7 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
                             *killer -= 1;
                         }
                     }
+                    _ => {}
                 }
             }
             Err(e) => {
