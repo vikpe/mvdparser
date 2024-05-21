@@ -95,9 +95,9 @@ pub const Y_FRAG_X: [&str; 28] = [
 
 pub const X_CAPTURE_FLAG: [&str; 4] = [
     " captured the RED flag!",
-    " captured the ÒÅÄ flag!",
+    " ãáðôõòåä the ÒÅÄ flag!",
     " captured the BLUE flag!",
-    " captured the ÂÌÕÅ flag!",
+    " ãáðôõòåä the ÂÌÕÅ flag!",
 ];
 
 pub const X_RETURN_FLAG_ASSIST: [&str; 2] = [

@@ -270,7 +270,7 @@ mod tests {
                 }),
             ),
             (
-                "FOO captured the ÒÅÄ flag!",
+                "FOO ãáðôõòåä the ÒÅÄ flag!",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::Capture,
@@ -284,7 +284,7 @@ mod tests {
                 }),
             ),
             (
-                "FOO captured the ÂÌÕÅ flag!",
+                "FOO ãáðôõòåä the ÂÌÕÅ flag!",
                 Ok(Event::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::Capture,

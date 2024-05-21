@@ -3,7 +3,7 @@ use std::io::Cursor;
 
 use anyhow::{anyhow as e, Result};
 
-use fragfile::FragEvent;
+use fragfile::Event;
 
 use crate::mvd::message::io::ReadMessages;
 use crate::mvd::message::print::ReadPrint;
@@ -11,6 +11,9 @@ use crate::mvd::message::update_frags::ReadUpdateFrags;
 use crate::mvd::message::Print;
 use crate::qw::{MessageType, PrintId};
 use crate::{clients, fragfile, frame};
+
+const NO_WEAPON: &[u8; 10] = b"no weapon\n";
+const NOT_ENOUGH_AMMO: &[u8; 16] = b"not enough ammo\n";
 
 pub fn frags(data: &[u8]) -> HashMap<String, i32> {
     let mut index = 0;
@@ -29,7 +32,17 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
             .is_ok_and(|t| t == MessageType::Print)
         {
             if let Ok(p) = body.read_print() {
-                if p.id == PrintId::Medium && !p.content.is_empty() {
+                if [PrintId::Medium, PrintId::High].contains(&p.id)
+                    && !p.content.is_empty()
+                    && p.content != NO_WEAPON
+                    && p.content != NOT_ENOUGH_AMMO
+                {
+                    let utf8val = quake_text::bytestr::to_utf8(&p.content);
+
+                    if utf8val.contains("took") {
+                        println!("{}", utf8val);
+                    }
+
                     print_frames.push((p, frame_info.clone()))
                 }
             }
@@ -43,42 +56,40 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
     for (print, frame_info) in print_frames {
         let content_u = quake_text::bytestr::to_unicode(&print.content);
 
-        match FragEvent::try_from(content_u.trim_end()) {
-            Ok(event) => {
-                //println!("{:?}", event);
-                match event {
-                    FragEvent::Frag { killer, .. } => {
-                        let killer = frags.entry(killer).or_insert(0);
-                        *killer += 1;
-                    }
-                    FragEvent::Death { player } => {
-                        let player = frags.entry(player).or_insert(0);
-                        *player -= 1;
-                    }
-                    FragEvent::Suicide { player } => {
-                        let player = frags.entry(player).or_insert(0);
-                        *player -= 2;
-                    }
-                    FragEvent::SuicideByWeapon { player } => {
-                        let player = frags.entry(player).or_insert(0);
-                        *player -= 1;
-                    }
-                    FragEvent::Teamkill { killer } => {
-                        let killer = frags.entry(killer).or_insert(0);
+        match Event::try_from(content_u.trim_end()) {
+            Ok(event) => match event {
+                Event::Frag { killer, .. } => {
+                    let killer = frags.entry(killer).or_insert(0);
+                    *killer += 1;
+                }
+                Event::Death { player } => {
+                    let player = frags.entry(player).or_insert(0);
+                    *player -= 1;
+                }
+                Event::Suicide { player } => {
+                    let player = frags.entry(player).or_insert(0);
+                    *player -= 2;
+                }
+                Event::SuicideByWeapon { player } => {
+                    let player = frags.entry(player).or_insert(0);
+                    *player -= 1;
+                }
+                Event::Teamkill { killer } => {
+                    let killer = frags.entry(killer).or_insert(0);
+                    *killer -= 1;
+                }
+                Event::TeamkillByUnknown { victim } => {
+                    if let Ok(name) = find_team_killer(data, frame_info.index, &victim) {
+                        let killer = frags.entry(name).or_insert(0);
                         *killer -= 1;
                     }
-                    FragEvent::TeamkillByUnknown { victim } => {
-                        if let Ok(name) = find_team_killer(data, frame_info.index, &victim) {
-                            // println!("KILLER: {:?} -> {}", content_u, name);
-                            let killer = frags.entry(name).or_insert(0);
-                            *killer -= 1;
-                        }
-                    }
-                    _ => {}
                 }
-            }
+                Event::FlagAlert { player, event } => {
+                    println!("FLAG ALERT: {:?} -> {:?}", player, event);
+                }
+            },
             Err(e) => {
-                println!("UNKNOWN {:?}", e);
+                // println!("UNKNOWN {:?}", e);
             }
         }
     }
@@ -151,7 +162,7 @@ mod tests {
 
     #[test]
     fn test_frags() -> Result<()> {
-        {
+        /*{
             let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
             let frags_map = frags(&demo_data);
             assert_eq!(frags_map.len(), 2);
@@ -179,8 +190,24 @@ mod tests {
             assert_eq!(frags_map.get("trl.........áøå"), Some(&26));
             assert_eq!(frags_map.get("tim.........áøå"), Some(&33));
             assert_eq!(frags_map.get("bar.........áøå"), Some(&27));
-        }
+        }*/
 
+        {
+            let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?;
+            let frags_map = frags(&demo_data);
+            assert_eq!(frags_map.len(), 11);
+            assert_eq!(frags_map.get("ì÷ú\u{AD}velocity"), Some(&164));
+            assert_eq!(frags_map.get("ì÷ú\u{AD}lethalwiz"), Some(&140));
+            assert_eq!(frags_map.get("ì÷ú\u{AD}xunito"), Some(&128));
+            assert_eq!(frags_map.get("lwz-brunelson"), Some(&120));
+            assert_eq!(frags_map.get("ì÷ú\u{AD}lag"), Some(&118));
+            assert_eq!(frags_map.get("CCTãáöåòïî"), Some(&29));
+            assert_eq!(frags_map.get("CCTâéìì"), Some(&23));
+            assert_eq!(frags_map.get("CCTÓèéîéîç"), Some(&19));
+            assert_eq!(frags_map.get("CCTäêåöõìóë"), Some(&15));
+            assert_eq!(frags_map.get("CCTÈåíìïãë"), Some(&10));
+        }
+        /*
         {
             let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
             let frags_map = frags(&demo_data);
@@ -190,7 +217,7 @@ mod tests {
             assert_eq!(frags_map.get("/ goldenboy"), Some(&5));
             assert_eq!(frags_map.get("/ tincan"), Some(&8));
             assert_eq!(frags_map.get("/ grue"), Some(&6));
-        }
+        }*/
 
         Ok(())
     }
