@@ -61,19 +61,19 @@ mod tests {
     fn test_flag_event() -> Result<()> {
         let test_cases: HashMap<&str, Result<FlagEvent>> = HashMap::from([
             (
-                "FOO got the ÒÅÄ flag!\n",
+                "FOO çïô the ÒÅÄ flag!\n",
                 Ok(FlagEvent::GotFlag {
                     player: "FOO".to_string(),
                 }),
             ),
             (
-                "\u{10}FOO\u{11} got the ÒÅÄ flag!\n",
+                "\u{10}FOO\u{11} çïô the ÒÅÄ flag!\n",
                 Ok(FlagEvent::GotFlag {
                     player: "\u{10}FOO\u{11}".to_string(),
                 }),
             ),
             (
-                "FOO got the ÂÌÕÅ flag!\n",
+                "FOO çïô the ÂÌÕÅ flag!\n",
                 Ok(FlagEvent::GotFlag {
                     player: "FOO".to_string(),
                 }),
@@ -97,13 +97,13 @@ mod tests {
                 }),
             ),
             (
-                "FOO returned the ÒÅÄ flag!\n",
+                "FOO òåôõòîåä the ÒÅÄ flag!\n",
                 Ok(FlagEvent::ReturnedFlag {
                     player: "FOO".to_string(),
                 }),
             ),
             (
-                "FOO returned the ÂÌÕÅ flag!\n",
+                "FOO òåôõòîåä the ÂÌÕÅ flag!\n",
                 Ok(FlagEvent::ReturnedFlag {
                     player: "FOO".to_string(),
                 }),
