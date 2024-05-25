@@ -1,23 +1,44 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 
-use anyhow::{anyhow as e, Result};
+use bstr::ByteVec;
 
-use fragfile::FragEvent;
-
+use crate::flagevent::FlagEvent;
+use crate::flagprint::{X_CAPTURED_FLAG, X_GOT_FLAG, X_RETURNED_FLAG};
+use crate::frame;
 use crate::mvd::message::io::ReadMessages;
 use crate::mvd::message::print::ReadPrint;
-use crate::mvd::message::update_frags::ReadUpdateFrags;
-use crate::mvd::message::Print;
-use crate::qw::{MessageType, PrintId};
-use crate::{clients, fragfile, frame};
+use crate::qw::MessageType;
 
-const NO_WEAPON: &[u8; 10] = b"no weapon\n";
-const NOT_ENOUGH_AMMO: &[u8; 16] = b"not enough ammo\n";
+const MSG_NO_WEAPON: &[u8; 10] = b"no weapon\n";
+const MSG_NOT_ENOUGH_AMMO: &[u8; 16] = b"not enough ammo\n";
 
-pub fn flags(data: &[u8]) -> HashMap<String, i32> {
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct PlayerFlagEvents {
+    capture_flag: u8,
+    got_flag: u8,
+    return_flag: u8,
+    return_flag_assist: u8,
+    defend_flag: u8,
+    defend_flag_carrier: u8,
+    defend_flag_carrier_vs_aggressive: u8,
+}
+
+pub fn is_message_suffix(message: &str) -> bool {
+    [
+        X_RETURNED_FLAG.to_vec(),
+        X_GOT_FLAG.to_vec(),
+        X_CAPTURED_FLAG.to_vec(),
+    ]
+    .iter()
+    .flatten()
+    .any(|n| message.trim_end().ends_with(n))
+}
+
+pub fn player_flag_events(data: &[u8]) -> HashMap<String, PlayerFlagEvents> {
     let mut index = 0;
-    let mut print_frames: Vec<(Print, frame::Info)> = vec![];
+
+    let mut prints: Vec<Vec<u8>> = vec![];
 
     while let Ok(frame_info) = frame::Info::from_data_and_index(data, index) {
         if frame_info.body_size == 0 {
@@ -26,75 +47,85 @@ pub fn flags(data: &[u8]) -> HashMap<String, i32> {
         }
 
         let mut body = Cursor::new(&data[frame_info.clone().body_range]);
+        let mut current_print: Vec<u8> = vec![];
 
-        if body
+        while body
             .read_message_type()
             .is_ok_and(|t| t == MessageType::Print)
         {
             if let Ok(p) = body.read_print() {
-                if [PrintId::Medium, PrintId::High].contains(&p.id)
-                    && !p.content.is_empty()
-                    && p.content != NO_WEAPON
-                    && p.content != NOT_ENOUGH_AMMO
+                if !p.content.is_empty()
+                    && p.content != MSG_NO_WEAPON
+                    && p.content != MSG_NOT_ENOUGH_AMMO
                 {
-                    let utf8val = quake_text::bytestr::to_utf8(&p.content);
+                    let content_utf8 = quake_text::bytestr::to_utf8(&p.content);
 
-                    if utf8val.contains("took") {
-                        println!("{}", utf8val);
+                    if content_utf8.contains(" capture ") {
+                        println!("{:?}", content_utf8.trim_end());
                     }
 
-                    print_frames.push((p, frame_info.clone()))
+                    if current_print.is_empty() {
+                        current_print.push_str(&p.content);
+                    } else {
+                        if is_message_suffix(&content_utf8) {
+                            current_print.push_str(&p.content);
+                        }
+
+                        prints.push(current_print.clone());
+                        current_print = vec![];
+                    }
                 }
             }
+        }
+
+        if !current_print.is_empty() {
+            prints.push(current_print);
         }
 
         index += frame_info.size;
     }
 
-    let mut frags: HashMap<String, i32> = HashMap::new();
+    let mut player_flag_events: HashMap<String, PlayerFlagEvents> = HashMap::new();
 
-    for (print, frame_info) in print_frames {
-        let content_u = quake_text::bytestr::to_unicode(&print.content);
-
-        match FragEvent::try_from(content_u.trim_end()) {
+    for print in prints {
+        match FlagEvent::try_from(&print[..]) {
             Ok(event) => match event {
-                FragEvent::Frag { killer, .. } => {
-                    let killer = frags.entry(killer).or_insert(0);
-                    *killer += 1;
+                FlagEvent::CapturedFlag { player } => {
+                    let pfe = player_flag_events.entry(player).or_default();
+                    pfe.capture_flag += 1;
                 }
-                FragEvent::Death { player } => {
-                    let player = frags.entry(player).or_insert(0);
-                    *player -= 1;
+                FlagEvent::DefendsFlag { player } => {
+                    let pfe = player_flag_events.entry(player).or_default();
+                    pfe.defend_flag += 1;
                 }
-                FragEvent::Suicide { player } => {
-                    let player = frags.entry(player).or_insert(0);
-                    *player -= 2;
+                FlagEvent::DefendsFlagCarrier { player } => {
+                    let pfe = player_flag_events.entry(player).or_default();
+                    pfe.defend_flag_carrier += 1;
                 }
-                FragEvent::SuicideByWeapon { player } => {
-                    let player = frags.entry(player).or_insert(0);
-                    *player -= 1;
+                FlagEvent::DefendFlagCarrierVsAggressive { player } => {
+                    let pfe = player_flag_events.entry(player).or_default();
+                    pfe.defend_flag_carrier_vs_aggressive += 1;
                 }
-                FragEvent::Teamkill { killer } => {
-                    let killer = frags.entry(killer).or_insert(0);
-                    *killer -= 1;
+                FlagEvent::GotFlag { player } => {
+                    let pfe = player_flag_events.entry(player).or_default();
+                    pfe.got_flag += 1;
                 }
-                FragEvent::TeamkillByUnknown { victim } => {
-                    if let Ok(name) = find_team_killer(data, frame_info.index, &victim) {
-                        let killer = frags.entry(name).or_insert(0);
-                        *killer -= 1;
-                    }
+                FlagEvent::ReturnedFlag { player } => {
+                    let pfe = player_flag_events.entry(player).or_default();
+                    pfe.return_flag += 1;
                 }
-                FragEvent::FlagAlert { player, event } => {
-                    println!("FLAG ALERT: {:?} -> {:?}", player, event);
+                FlagEvent::ReturnedFlagAssist { player } => {
+                    let pfe = player_flag_events.entry(player).or_default();
+                    pfe.return_flag_assist += 1;
                 }
             },
-            Err(e) => {
+            Err(_e) => {
                 // println!("UNKNOWN {:?}", e);
             }
         }
     }
 
-    frags
+    player_flag_events
 }
 
 #[cfg(test)]
@@ -107,21 +138,36 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_flagevents() -> Result<()> {
+    fn test_player_flag_events() -> Result<()> {
         {
             let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?;
-            let frags_map = flags(&demo_data);
-            assert_eq!(frags_map.len(), 11);
-            assert_eq!(frags_map.get("ì÷ú\u{AD}velocity"), Some(&164));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}lethalwiz"), Some(&140));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}xunito"), Some(&128));
-            assert_eq!(frags_map.get("lwz-brunelson"), Some(&120));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}lag"), Some(&118));
-            assert_eq!(frags_map.get("CCTãáöåòïî"), Some(&29));
-            assert_eq!(frags_map.get("CCTâéìì"), Some(&23));
-            assert_eq!(frags_map.get("CCTÓèéîéîç"), Some(&19));
-            assert_eq!(frags_map.get("CCTäêåöõìóë"), Some(&15));
-            assert_eq!(frags_map.get("CCTÈåíìïãë"), Some(&10));
+            let events = player_flag_events(&demo_data);
+            for (player, pfe) in events.iter() {
+                println!("{:?} {:?}", player, pfe);
+            }
+            // assert_eq!(events.len(), 10);
+
+            assert_eq!(
+                events.get("ì÷ú\u{AD}velocity"),
+                Some(&PlayerFlagEvents {
+                    capture_flag: 6,
+                    got_flag: 7,
+                    return_flag: 4,
+                    return_flag_assist: 1,
+                    defend_flag: 4,
+                    defend_flag_carrier: 3,
+                    defend_flag_carrier_vs_aggressive: 0,
+                })
+            );
+            /*assert_eq!(events.get("ì÷ú\u{AD}lethalwiz"), Some(&140));
+            assert_eq!(events.get("ì÷ú\u{AD}xunito"), Some(&128));
+            assert_eq!(events.get("lwz-brunelson"), Some(&120));
+            assert_eq!(events.get("ì÷ú\u{AD}lag"), Some(&118));
+            assert_eq!(events.get("CCTãáöåòïî"), Some(&29));
+            assert_eq!(events.get("CCTâéìì"), Some(&23));
+            assert_eq!(events.get("CCTÓèéîéîç"), Some(&19));
+            assert_eq!(events.get("CCTäêåöõìóë"), Some(&15));
+            assert_eq!(events.get("CCTÈåíìïãë"), Some(&10));*/
         }
 
         Ok(())
