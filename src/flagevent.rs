@@ -1,90 +1,47 @@
 use anyhow::{anyhow as e, Result};
 
-use crate::fragfile_messages::{
-    UNKNOWN_TEAMKILL_X, WILDCARD, X_CAPTURE_FLAG, X_DEATH, X_DEFEND_CARRIER,
-    X_DEFEND_CARRIER_VS_AGGRESSIVE, X_DEFEND_FLAG, X_FRAG_Y, X_RETURN_FLAG, X_RETURN_FLAG_ASSIST,
-    X_SUICIDE, X_SUICIDE_BY_WEAPON, X_TEAMKILL_UNKNOWN, Y_FRAG_X,
+use crate::flagmessages::{
+
 };
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum Event {
-    Death { player: String },
-    Suicide { player: String },
-    SuicideByWeapon { player: String },
-    Frag { killer: String, victim: String },
-    Teamkill { killer: String },
-    TeamkillByUnknown { victim: String },
-    FlagAlert { player: String, event: FlagEvent },
-}
-
-#[derive(Debug, PartialEq, Eq)]
 pub enum FlagEvent {
-    Capture,
-    Defend,
-    DefendCarrier,
-    DefendCarrierVsAggressive,
-    ReturnFlag,
-    ReturnFlagAssist,
+    Capture { player: String },
+    Defend { player: String },
+    DefendCarrier { player: String },
+    DefendCarrierVsAggressive { player: String },
+    ReturnFlag { player: String },
+    ReturnFlagAssist { player: String },
 }
 
-impl TryFrom<&str> for Event {
+impl TryFrom<&str> for FlagEvent {
     type Error = anyhow::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        if let Some(p) = X_DEATH.iter().find(|&p| value.ends_with(p)) {
-            return Ok(Event::Death {
-                player: value.trim_end_matches(p).to_string(),
-            });
-        } else if let Some(p) = X_SUICIDE_BY_WEAPON.iter().find(|&p| value.ends_with(p)) {
-            return Ok(Event::SuicideByWeapon {
-                player: value.trim_end_matches(p).to_string(),
-            });
-        } else if value.ends_with(X_SUICIDE) {
-            return Ok(Event::Suicide {
-                player: value.trim_end_matches(X_SUICIDE).to_string(),
-            });
-        } else if let Some(p) = X_TEAMKILL_UNKNOWN.iter().find(|&p| value.ends_with(p)) {
-            return Ok(Event::Teamkill {
-                killer: value.trim_end_matches(p).to_string(),
-            });
-        } else if let Some(p) = UNKNOWN_TEAMKILL_X.iter().find(|&p| value.ends_with(p)) {
-            return Ok(Event::TeamkillByUnknown {
-                victim: value.trim_end_matches(p).to_string(),
-            });
-        }
 
-        for p in [X_FRAG_Y.to_vec(), Y_FRAG_X.to_vec()].concat() {
-            if let Some((x, y)) = pattern_match(value, p) {
-                let (killer, victim) = match X_FRAG_Y.contains(&p) {
-                    true => (x, y),
-                    false => (y, x),
-                };
-                return Ok(Event::Frag { killer, victim });
-            }
-        }
 
         if let Some(p) = X_CAPTURE_FLAG.iter().find(|&p| value.ends_with(p)) {
-            return Ok(Event::FlagAlert {
+            return Ok(FragEvent::FlagAlert {
                 player: value.trim_end_matches(p).to_string(),
                 event: FlagEvent::Capture,
             });
         } else if let Some(p) = X_RETURN_FLAG_ASSIST.iter().find(|&p| value.ends_with(p)) {
-            return Ok(Event::FlagAlert {
+            return Ok(FragEvent::FlagAlert {
                 player: value.trim_end_matches(p).to_string(),
                 event: FlagEvent::ReturnFlagAssist,
             });
         } else if let Some(p) = X_RETURN_FLAG.iter().find(|&p| value.ends_with(p)) {
-            return Ok(Event::FlagAlert {
+            return Ok(FragEvent::FlagAlert {
                 player: value.trim_end_matches(p).to_string(),
                 event: FlagEvent::ReturnFlag,
             });
         } else if let Some(p) = X_DEFEND_FLAG.iter().find(|&p| value.ends_with(p)) {
-            return Ok(Event::FlagAlert {
+            return Ok(FragEvent::FlagAlert {
                 player: value.trim_end_matches(p).to_string(),
                 event: FlagEvent::Defend,
             });
         } else if let Some(p) = X_DEFEND_CARRIER.iter().find(|&p| value.ends_with(p)) {
-            return Ok(Event::FlagAlert {
+            return Ok(FragEvent::FlagAlert {
                 player: value.trim_end_matches(p).to_string(),
                 event: FlagEvent::DefendCarrier,
             });
@@ -92,7 +49,7 @@ impl TryFrom<&str> for Event {
             .iter()
             .find(|&p| value.ends_with(p))
         {
-            return Ok(Event::FlagAlert {
+            return Ok(FragEvent::FlagAlert {
                 player: value.trim_end_matches(p).to_string(),
                 event: FlagEvent::DefendCarrierVsAggressive,
             });
@@ -123,44 +80,44 @@ mod tests {
     use anyhow::Result;
     use pretty_assertions::assert_eq;
 
-    use crate::fragfile::Event::{
+    use crate::fragevent::FragEvent::{
         Death, Frag, Suicide, SuicideByWeapon, Teamkill, TeamkillByUnknown,
     };
 
     use super::*;
 
-    fn foo_death() -> Result<Event> {
+    fn foo_death() -> Result<FragEvent> {
         Ok(Death {
             player: "FOO".to_string(),
         })
     }
 
-    fn foo_suicide_wpn() -> Result<Event> {
+    fn foo_suicide_wpn() -> Result<FragEvent> {
         Ok(SuicideByWeapon {
             player: "FOO".to_string(),
         })
     }
 
-    fn foo_tk() -> Result<Event> {
+    fn foo_tk() -> Result<FragEvent> {
         Ok(Teamkill {
             killer: "FOO".to_string(),
         })
     }
 
-    fn foo_tk_by_unknown() -> Result<Event> {
+    fn foo_tk_by_unknown() -> Result<FragEvent> {
         Ok(TeamkillByUnknown {
             victim: "FOO".to_string(),
         })
     }
 
-    fn foo_frag_bar() -> Result<Event> {
+    fn foo_frag_bar() -> Result<FragEvent> {
         Ok(Frag {
             killer: "FOO".to_string(),
             victim: "BAR".to_string(),
         })
     }
 
-    fn bar_frag_foo() -> Result<Event> {
+    fn bar_frag_foo() -> Result<FragEvent> {
         Ok(Frag {
             killer: "BAR".to_string(),
             victim: "FOO".to_string(),
@@ -169,7 +126,7 @@ mod tests {
 
     #[test]
     fn test_frag_event() -> Result<()> {
-        let test_cases: HashMap<&str, Result<Event>> = HashMap::from([
+        let test_cases: HashMap<&str, Result<FragEvent>> = HashMap::from([
             // x death
             ("FOO sleeps with the fishes", foo_death()),
             ("FOO sucks it down", foo_death()),
@@ -264,147 +221,147 @@ mod tests {
             // flag alerts
             (
                 "FOO captured the RED flag!",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::Capture,
                 }),
             ),
             (
                 "FOO ãáðôõòåä the ÒÅÄ flag!",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::Capture,
                 }),
             ),
             (
                 "FOO captured the BLUE flag!",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::Capture,
                 }),
             ),
             (
                 "FOO ãáðôõòåä the ÂÌÕÅ flag!",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::Capture,
                 }),
             ),
             (
                 "FOO gets an assist for returning his flag!",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::ReturnFlagAssist,
                 }),
             ),
             (
                 "FOO gets an assist for fragging the flag carrier!",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::ReturnFlagAssist,
                 }),
             ),
             (
                 "FOO returned the RED flag!",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::ReturnFlag,
                 }),
             ),
             (
                 "FOO returned the ÒÅÄ flag!",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::ReturnFlag,
                 }),
             ),
             (
                 "FOO returned the BLUE flag!",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::ReturnFlag,
                 }),
             ),
             (
                 "FOO returned the ÂÌÕÅ flag!",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::ReturnFlag,
                 }),
             ),
             (
                 "FOO defends the RED flag",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::Defend,
                 }),
             ),
             (
                 "FOO defends the ÒÅÄ flag",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::Defend,
                 }),
             ),
             (
                 "FOO defends the BLUE flag",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::Defend,
                 }),
             ),
             (
                 "FOO defends RED's flag carrier",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::DefendCarrier,
                 }),
             ),
             (
                 "FOO defends ÒÅÄ's flag carrier",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::DefendCarrier,
                 }),
             ),
             (
                 "FOO defends BLUE's flag carrier",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::DefendCarrier,
                 }),
             ),
             (
                 "FOO defends ÂÌÕÅ's flag carrier",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::DefendCarrier,
                 }),
             ),
             (
                 "FOO defends RED's flag carrier against an aggressive enemy",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::DefendCarrierVsAggressive,
                 }),
             ),
             (
                 "FOO defends ÒÅÄ's flag carrier against an aggressive enemy",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::DefendCarrierVsAggressive,
                 }),
             ),
             (
                 "FOO defends BLUE's flag carrier against an aggressive enemy",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::DefendCarrierVsAggressive,
                 }),
             ),
             (
                 "FOO defends ÂÌÕÅ's flag carrier against an aggressive enemy",
-                Ok(Event::FlagAlert {
+                Ok(FragEvent::FlagAlert {
                     player: "FOO".to_string(),
                     event: FlagEvent::DefendCarrierVsAggressive,
                 }),
@@ -413,7 +370,7 @@ mod tests {
 
         for (input, expected) in test_cases {
             let msg = format!(r#""{}" should equal {:?}"#, &input, &expected);
-            assert_eq!(Event::try_from(input)?, expected?, "{}", msg);
+            assert_eq!(FragEvent::try_from(input)?, expected?, "{}", msg);
         }
 
         Ok(())
