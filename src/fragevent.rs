@@ -1,6 +1,6 @@
 use anyhow::{anyhow as e, Result};
 
-use crate::frag_prints::{
+use crate::fragprint::{
     UNKNOWN_TEAMKILL_X, WILDCARD, X_DEATH, X_FRAG_Y, X_SUICIDE, X_SUICIDE_BY_WEAPON,
     X_TEAMKILL_UNKNOWN, Y_FRAG_X,
 };
@@ -19,25 +19,25 @@ impl TryFrom<&str> for FragEvent {
     type Error = anyhow::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        if let Some(p) = X_DEATH.iter().find(|&p| value.ends_with(p)) {
+        if let Some(pos) = X_DEATH.iter().find_map(|&p| value.find(p)) {
             return Ok(FragEvent::Death {
-                player: value.trim_end_matches(p).to_string(),
+                player: value[..pos].to_string(),
             });
-        } else if let Some(p) = X_SUICIDE_BY_WEAPON.iter().find(|&p| value.ends_with(p)) {
+        } else if let Some(pos) = X_SUICIDE_BY_WEAPON.iter().find_map(|&p| value.find(p)) {
             return Ok(FragEvent::SuicideByWeapon {
-                player: value.trim_end_matches(p).to_string(),
+                player: value[..pos].to_string(),
             });
         } else if value.ends_with(X_SUICIDE) {
             return Ok(FragEvent::Suicide {
                 player: value.trim_end_matches(X_SUICIDE).to_string(),
             });
-        } else if let Some(p) = X_TEAMKILL_UNKNOWN.iter().find(|&p| value.ends_with(p)) {
+        } else if let Some(pos) = X_TEAMKILL_UNKNOWN.iter().find_map(|&p| value.find(p)) {
             return Ok(FragEvent::Teamkill {
-                killer: value.trim_end_matches(p).to_string(),
+                killer: value[..pos].to_string(),
             });
-        } else if let Some(p) = UNKNOWN_TEAMKILL_X.iter().find(|&p| value.ends_with(p)) {
+        } else if let Some(pos) = UNKNOWN_TEAMKILL_X.iter().find_map(|&p| value.find(p)) {
             return Ok(FragEvent::TeamkillByUnknown {
-                victim: value.trim_end_matches(p).to_string(),
+                victim: value[..pos].to_string(),
             });
         }
 

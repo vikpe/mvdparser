@@ -42,7 +42,7 @@ mod clientinfo;
 mod clients;
 mod duration;
 mod fragevent;
-mod frag_prints;
+mod fragprint;
 mod frags;
 mod frame;
 mod ktxstats;
