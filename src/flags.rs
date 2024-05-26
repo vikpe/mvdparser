@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 
+use anyhow::Result;
 use bstr::ByteSlice;
 
+use crate::clients::player_clients;
 use crate::flagevent::FlagEvent;
 use crate::flagprint;
 use crate::frame;
@@ -10,18 +12,18 @@ use crate::mvd::message::io::ReadMessages;
 use crate::mvd::message::print::ReadPrint;
 use crate::qw::{MessageType, PrintId};
 
-#[derive(Debug, Default, PartialEq, Eq)]
-pub struct PlayerFlagEvents {
-    captures: u8,
-    pickups: u8,
-    returns: u8,
-    carrier_frags: u8,
-    defends: u8,
-    carrier_defends: u8,
-    carrier_defends_vs_aggressive: u8,
+pub mod bonus {
+    pub const CAPTURE: i32 = 15;
+    pub const CAPTURE_TEAM: i32 = 10;
+    pub const CARRIER_DEFEND: i32 = 1;
+    pub const CARRIER_DEFEND_VS_AGGRESSIVE: i32 = 2;
+    pub const CARRIER_FRAG: i32 = 2;
+    pub const FLAG_DEFEND: i32 = 2;
+    pub const RETURN_FLAG_ASSIST: i32 = 1;
+    pub const RETURN_FLAG: i32 = 1;
 }
 
-pub fn player_flag_events(data: &[u8]) -> HashMap<String, PlayerFlagEvents> {
+pub fn player_flag_events(data: &[u8]) -> Result<HashMap<String, PlayerFlagEvents>> {
     let mut index = 0;
 
     let mut prints: Vec<Vec<u8>> = vec![];
@@ -62,7 +64,13 @@ pub fn player_flag_events(data: &[u8]) -> HashMap<String, PlayerFlagEvents> {
         index += frame_info.size;
     }
 
-    let mut player_flag_events: HashMap<String, PlayerFlagEvents> = HashMap::new();
+    let players = player_clients(data)?;
+    let mut events_pp = HashMap::from_iter(
+        players
+            .iter()
+            .cloned()
+            .map(|c| (c.name.clone(), PlayerFlagEvents::default())),
+    );
 
     for print in prints {
         let print_u = quake_text::bytestr::to_unicode(&print);
@@ -70,31 +78,31 @@ pub fn player_flag_events(data: &[u8]) -> HashMap<String, PlayerFlagEvents> {
         match FlagEvent::try_from(print_u.as_str()) {
             Ok(event) => match event {
                 FlagEvent::CapturedFlag { player } => {
-                    let pfe = player_flag_events.entry(player).or_default();
+                    let pfe = events_pp.entry(player).or_default();
                     pfe.captures += 1;
                 }
                 FlagEvent::DefendsFlag { player } => {
-                    let pfe = player_flag_events.entry(player).or_default();
+                    let pfe = events_pp.entry(player).or_default();
                     pfe.defends += 1;
                 }
                 FlagEvent::DefendsFlagCarrier { player } => {
-                    let pfe = player_flag_events.entry(player).or_default();
+                    let pfe = events_pp.entry(player).or_default();
                     pfe.carrier_defends += 1;
                 }
                 FlagEvent::DefendsFlagCarrierVsAggressive { player } => {
-                    let pfe = player_flag_events.entry(player).or_default();
+                    let pfe = events_pp.entry(player).or_default();
                     pfe.carrier_defends_vs_aggressive += 1;
                 }
                 FlagEvent::GotFlag { player } => {
-                    let pfe = player_flag_events.entry(player).or_default();
+                    let pfe = events_pp.entry(player).or_default();
                     pfe.pickups += 1;
                 }
                 FlagEvent::ReturnedFlag { player } => {
-                    let pfe = player_flag_events.entry(player).or_default();
+                    let pfe = events_pp.entry(player).or_default();
                     pfe.returns += 1;
                 }
                 FlagEvent::ReturnedFlagAssist { player } => {
-                    let pfe = player_flag_events.entry(player).or_default();
+                    let pfe = events_pp.entry(player).or_default();
                     pfe.carrier_frags += 1;
                 }
             },
@@ -104,7 +112,7 @@ pub fn player_flag_events(data: &[u8]) -> HashMap<String, PlayerFlagEvents> {
         }
     }
 
-    player_flag_events
+    Ok(events_pp)
 }
 
 fn is_message_suffix(print: &[u8]) -> bool {
@@ -116,6 +124,38 @@ fn is_message_suffix(print: &[u8]) -> bool {
     .iter()
     .flatten()
     .any(|n| quake_text::bytestr::to_unicode(print).ends_with(n))
+}
+
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct PlayerFlagScores {
+    pub player: i32,
+    pub team: i32,
+}
+
+impl From<&PlayerFlagEvents> for PlayerFlagScores {
+    fn from(value: &PlayerFlagEvents) -> Self {
+        let mut scores = PlayerFlagScores::default();
+        scores.player += bonus::CAPTURE * value.captures as i32;
+        scores.player += bonus::CARRIER_FRAG * value.carrier_frags as i32;
+        scores.player += bonus::CARRIER_DEFEND * value.carrier_defends as i32;
+        scores.player +=
+            bonus::CARRIER_DEFEND_VS_AGGRESSIVE * value.carrier_defends_vs_aggressive as i32;
+        scores.player += bonus::FLAG_DEFEND * value.defends as i32;
+        scores.player += bonus::RETURN_FLAG * value.returns as i32;
+        scores.team += bonus::CAPTURE_TEAM * value.captures as i32;
+        scores
+    }
+}
+
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct PlayerFlagEvents {
+    captures: u8,
+    pickups: u8,
+    returns: u8,
+    carrier_frags: u8,
+    defends: u8,
+    carrier_defends: u8,
+    carrier_defends_vs_aggressive: u8,
 }
 
 #[cfg(test)]
@@ -131,7 +171,7 @@ mod tests {
     fn test_player_flag_events() -> Result<()> {
         {
             let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?;
-            let events = player_flag_events(&demo_data);
+            let events = player_flag_events(&demo_data)?;
 
             assert_eq!(events.len(), 10);
 
@@ -231,5 +271,26 @@ mod tests {
         }
 
         Ok(())
+    }
+
+    #[test]
+    fn test_player_flag_scores() {
+        let events = PlayerFlagEvents {
+            captures: 1,                      // 15
+            pickups: 2,                       //
+            returns: 3,                       // 3
+            carrier_frags: 4,                 // 8
+            defends: 5,                       // 10
+            carrier_defends: 6,               // 6
+            carrier_defends_vs_aggressive: 7, // 14
+        };
+
+        assert_eq!(
+            PlayerFlagScores::from(&events),
+            PlayerFlagScores {
+                player: 56,
+                team: 10
+            }
+        );
     }
 }
