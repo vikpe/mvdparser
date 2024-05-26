@@ -10,7 +10,7 @@ pub enum FlagEvent {
     DefendsFlagCarrier { player: String },
     DefendsFlagCarrierVsAggressive { player: String },
     ReturnedFlag { player: String },
-    ReturnedFlagAssist { player: String },
+    FraggedCarrier { player: String },
 }
 
 impl TryFrom<&str> for FlagEvent {
@@ -38,7 +38,7 @@ impl TryFrom<&str> for FlagEvent {
                     4 => return Ok(FlagEvent::DefendsFlagCarrier { player }),
                     5 => return Ok(FlagEvent::GotFlag { player }),
                     6 => return Ok(FlagEvent::ReturnedFlag { player }),
-                    7 => return Ok(FlagEvent::ReturnedFlagAssist { player }),
+                    7 => return Ok(FlagEvent::FraggedCarrier { player }),
                     _ => {}
                 }
             }
@@ -58,7 +58,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_flag_event() -> Result<()> {
+    fn test_flag_eventaaaaaaa() -> Result<()> {
         let test_cases: HashMap<&str, Result<FlagEvent>> = HashMap::from([
             (
                 "FOO çïô the ÒÅÄ flag!\n",
@@ -92,7 +92,13 @@ mod tests {
             ),
             (
                 "FOO gets an assist for fragging the flag carrier!\n",
-                Ok(FlagEvent::ReturnedFlagAssist {
+                Ok(FlagEvent::FraggedCarrier {
+                    player: "FOO".to_string(),
+                }),
+            ),
+            (
+                "FOO gets an assist for returning his flag!\n",
+                Ok(FlagEvent::FraggedCarrier {
                     player: "FOO".to_string(),
                 }),
             ),
