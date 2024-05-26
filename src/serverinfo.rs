@@ -101,12 +101,14 @@ mod tests {
 pub mod analyze {
     use quake_serverinfo::Serverinfo;
 
-    pub fn is_ctf(info: Serverinfo) -> bool {
+    pub fn is_ctf(info: &Serverinfo) -> bool {
         [
-            info.mode.is_some_and(|mode| mode == "ctf"),
-            info.ktxmode.is_some_and(|mode| mode == "ctf"),
+            info.mode.as_ref().is_some_and(|mode| mode == "ctf"),
+            info.ktxmode.as_ref().is_some_and(|mode| mode == "ctf"),
             info.teamplay == Some(4) && info.deathmatch == Some(3),
-            info.serverdemo.is_some_and(|demo| demo.starts_with("ctf_")),
+            info.serverdemo
+                .as_ref()
+                .is_some_and(|demo| demo.starts_with("ctf_")),
         ]
         .iter()
         .any(|c| *c)
@@ -120,14 +122,14 @@ pub mod analyze {
 
         #[test]
         fn test_is_ctf() {
-            assert_eq!(is_ctf(Serverinfo::from(r#"\mode\ctf"#)), true);
-            assert_eq!(is_ctf(Serverinfo::from(r#"\ktxmode\ctf"#)), true);
+            assert_eq!(is_ctf(&Serverinfo::from(r#"\mode\ctf"#)), true);
+            assert_eq!(is_ctf(&Serverinfo::from(r#"\ktxmode\ctf"#)), true);
             assert_eq!(
-                is_ctf(Serverinfo::from(r#"\teamplay\4\deathmatch\3"#)),
+                is_ctf(&Serverinfo::from(r#"\teamplay\4\deathmatch\3"#)),
                 true
             );
             assert_eq!(
-                is_ctf(Serverinfo::from(
+                is_ctf(&Serverinfo::from(
                     r#"\maxfps\77\pm_ktjump\1\*version\MVDSV 0.36\*z_ext\511\*admin\suom1 <suom1@irc.ax>\ktxver\1.42\sv_antilag\2\maxspectators\12\teamplay\2\*gamedir\qw\maxclients\8\timelimit\20\deathmatch\1\mode\4on4\matchtag\tsq-axe lan\hostname\QUAKE.SE KTX:28502\fpd\142\*qvm\so\*progs\so\map\dm2\status\Countdown\serverdemo\4on4_oeks_vs_tsq[dm2]20240426-1716.mvd"#
                 )),
                 false
