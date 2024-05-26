@@ -215,59 +215,59 @@ mod tests {
     fn test_frags_from_ktxstats_v3() -> Result<()> {
         {
             let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
-            let frags_map = frags_from_ktxstats(&demo_data)?;
-            assert_eq!(frags_map.len(), 2);
-            assert_eq!(frags_map.get("eQu"), Some(&19));
-            assert_eq!(frags_map.get("KabÏÏm"), Some(&20));
+            let frags = frags_from_ktxstats(&demo_data)?;
+            assert_eq!(frags.len(), 2);
+            assert_eq!(frags.get("KabÏÏm"), Some(&20));
+            assert_eq!(frags.get("eQu"), Some(&19));
         }
 
         {
             let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
-            let frags_map = frags_from_ktxstats(&demo_data)?;
-            assert_eq!(frags_map.len(), 2);
-            assert_eq!(frags_map.get("HoLy"), Some(&25));
-            assert_eq!(frags_map.get("äáçï"), Some(&31));
+            let frags = frags_from_ktxstats(&demo_data)?;
+            assert_eq!(frags.len(), 2);
+            assert_eq!(frags.get("äáçï"), Some(&31));
+            assert_eq!(frags.get("HoLy"), Some(&25));
         }
 
         {
             let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
-            let frags_map = frags_from_ktxstats(&demo_data)?;
-            assert_eq!(frags_map.len(), 8);
-            assert_eq!(frags_map.get("conan"), Some(&71));
-            assert_eq!(frags_map.get("djevulsk"), Some(&74));
-            assert_eq!(frags_map.get("elguapo"), Some(&60));
-            assert_eq!(frags_map.get("muttan"), Some(&89));
-            assert_eq!(frags_map.get("tco.........áøå"), Some(&32));
-            assert_eq!(frags_map.get("trl.........áøå"), Some(&26));
-            assert_eq!(frags_map.get("tim.........áøå"), Some(&33));
-            assert_eq!(frags_map.get("bar.........áøå"), Some(&27));
+            let frags = frags_from_ktxstats(&demo_data)?;
+            assert_eq!(frags.len(), 8);
+            assert_eq!(frags.get("muttan"), Some(&89));
+            assert_eq!(frags.get("djevulsk"), Some(&74));
+            assert_eq!(frags.get("conan"), Some(&71));
+            assert_eq!(frags.get("elguapo"), Some(&60));
+            assert_eq!(frags.get("tim.........áøå"), Some(&33));
+            assert_eq!(frags.get("tco.........áøå"), Some(&32));
+            assert_eq!(frags.get("bar.........áøå"), Some(&27));
+            assert_eq!(frags.get("trl.........áøå"), Some(&26));
         }
 
         {
             let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?;
-            let frags_map = frags_from_ktxstats(&demo_data)?;
-            assert_eq!(frags_map.len(), 10);
-            assert_eq!(frags_map.get("CCTãáöåòïî"), Some(&29));
-            assert_eq!(frags_map.get("CCTâéìì"), Some(&23));
-            assert_eq!(frags_map.get("CCTÓèéîéîç"), Some(&19));
-            assert_eq!(frags_map.get("CCTäêåöõìóë"), Some(&15));
-            assert_eq!(frags_map.get("CCTÈåíìïãë"), Some(&10));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}velocity"), Some(&164));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}lethalwiz"), Some(&140));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}lag"), Some(&118));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}xunito"), Some(&128));
-            assert_eq!(frags_map.get("lwz-brunelson"), Some(&120));
+            let frags = frags_from_ktxstats(&demo_data)?;
+            assert_eq!(frags.len(), 10);
+            assert_eq!(frags.get("ì÷ú\u{AD}velocity"), Some(&164));
+            assert_eq!(frags.get("ì÷ú\u{AD}lethalwiz"), Some(&140));
+            assert_eq!(frags.get("ì÷ú\u{AD}xunito"), Some(&128));
+            assert_eq!(frags.get("lwz-brunelson"), Some(&120));
+            assert_eq!(frags.get("ì÷ú\u{AD}lag"), Some(&118));
+            assert_eq!(frags.get("CCTãáöåòïî"), Some(&29));
+            assert_eq!(frags.get("CCTâéìì"), Some(&23));
+            assert_eq!(frags.get("CCTÓèéîéîç"), Some(&19));
+            assert_eq!(frags.get("CCTäêåöõìóë"), Some(&15));
+            assert_eq!(frags.get("CCTÈåíìïãë"), Some(&10));
         }
 
         {
             let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
-            let frags_map = frags_from_ktxstats(&demo_data)?;
-            assert_eq!(frags_map.len(), 5);
-            assert_eq!(frags_map.get("test"), Some(&4));
-            assert_eq!(frags_map.get("/ bro"), Some(&6));
-            assert_eq!(frags_map.get("/ goldenboy"), Some(&5));
-            assert_eq!(frags_map.get("/ tincan"), Some(&8));
-            assert_eq!(frags_map.get("/ grue"), Some(&6));
+            let frags = frags_from_ktxstats(&demo_data)?;
+            assert_eq!(frags.len(), 5);
+            assert_eq!(frags.get("/ tincan"), Some(&8));
+            assert_eq!(frags.get("/ bro"), Some(&6));
+            assert_eq!(frags.get("/ grue"), Some(&6));
+            assert_eq!(frags.get("/ goldenboy"), Some(&5));
+            assert_eq!(frags.get("test"), Some(&4));
         }
 
         Ok(())
@@ -277,59 +277,77 @@ mod tests {
     fn test_frags_from_parsing() -> Result<()> {
         {
             let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
-            let frags_map = frags_from_parsing(&demo_data)?;
-            assert_eq!(frags_map.len(), 2);
-            assert_eq!(frags_map.get("eQu"), Some(&19));
-            assert_eq!(frags_map.get("KabÏÏm"), Some(&20));
+            let frags = frags_from_parsing(&demo_data)?;
+            assert_eq!(frags.len(), 2);
+            assert_eq!(frags.get("KabÏÏm"), Some(&20));
+            assert_eq!(frags.get("eQu"), Some(&19));
         }
 
         {
             let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
-            let frags_map = frags_from_parsing(&demo_data)?;
-            assert_eq!(frags_map.len(), 2);
-            assert_eq!(frags_map.get("HoLy"), Some(&25));
-            assert_eq!(frags_map.get("äáçï"), Some(&31));
+            let frags = frags_from_parsing(&demo_data)?;
+            assert_eq!(frags.len(), 2);
+            assert_eq!(frags.get("äáçï"), Some(&31));
+            assert_eq!(frags.get("HoLy"), Some(&25));
         }
 
         {
             let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
-            let frags_map = frags_from_parsing(&demo_data)?;
-            assert_eq!(frags_map.len(), 8);
-            assert_eq!(frags_map.get("conan"), Some(&71));
-            assert_eq!(frags_map.get("djevulsk"), Some(&74));
-            assert_eq!(frags_map.get("elguapo"), Some(&60));
-            assert_eq!(frags_map.get("muttan"), Some(&89));
-            assert_eq!(frags_map.get("tco.........áøå"), Some(&32));
-            assert_eq!(frags_map.get("trl.........áøå"), Some(&26));
-            assert_eq!(frags_map.get("tim.........áøå"), Some(&33));
-            assert_eq!(frags_map.get("bar.........áøå"), Some(&27));
+            let frags = frags_from_parsing(&demo_data)?;
+            assert_eq!(frags.len(), 8);
+            assert_eq!(frags.get("muttan"), Some(&89));
+            assert_eq!(frags.get("djevulsk"), Some(&74));
+            assert_eq!(frags.get("conan"), Some(&71));
+            assert_eq!(frags.get("elguapo"), Some(&60));
+            assert_eq!(frags.get("tim.........áøå"), Some(&33));
+            assert_eq!(frags.get("tco.........áøå"), Some(&32));
+            assert_eq!(frags.get("bar.........áøå"), Some(&27));
+            assert_eq!(frags.get("trl.........áøå"), Some(&26));
         }
 
         {
             let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?;
-            let frags_map = frags_from_parsing(&demo_data)?;
-            assert_eq!(frags_map.len(), 10);
-            assert_eq!(frags_map.get("CCTãáöåòïî"), Some(&29));
-            assert_eq!(frags_map.get("CCTâéìì"), Some(&23));
-            assert_eq!(frags_map.get("CCTÓèéîéîç"), Some(&19));
-            assert_eq!(frags_map.get("CCTäêåöõìóë"), Some(&15));
-            assert_eq!(frags_map.get("CCTÈåíìïãë"), Some(&10));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}velocity"), Some(&164));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}lethalwiz"), Some(&140));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}lag"), Some(&118));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}xunito"), Some(&128));
-            assert_eq!(frags_map.get("lwz-brunelson"), Some(&120));
+            let frags = frags_from_parsing(&demo_data)?;
+
+            let mut players: Vec<String> = vec![];
+
+            for (k, v) in &frags {
+                let line = format!(
+                    "{:0>3}\t{}",
+                    v,
+                    quake_text::unicode::to_utf8(k).to_lowercase()
+                );
+                players.push(line);
+            }
+            players.sort();
+            players.reverse();
+
+            for p in players {
+                println!("{}", p);
+            }
+
+            assert_eq!(frags.len(), 10);
+            assert_eq!(frags.get("ì÷ú\u{AD}velocity"), Some(&164));
+            assert_eq!(frags.get("ì÷ú\u{AD}lethalwiz"), Some(&140));
+            assert_eq!(frags.get("ì÷ú\u{AD}xunito"), Some(&128));
+            assert_eq!(frags.get("lwz-brunelson"), Some(&120));
+            assert_eq!(frags.get("ì÷ú\u{AD}lag"), Some(&118));
+            assert_eq!(frags.get("CCTãáöåòïî"), Some(&29));
+            assert_eq!(frags.get("CCTâéìì"), Some(&23));
+            assert_eq!(frags.get("CCTÓèéîéîç"), Some(&19));
+            assert_eq!(frags.get("CCTäêåöõìóë"), Some(&15));
+            assert_eq!(frags.get("CCTÈåíìïãë"), Some(&10));
         }
 
         {
             let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
-            let frags_map = frags_from_parsing(&demo_data)?;
-            assert_eq!(frags_map.len(), 5);
-            assert_eq!(frags_map.get("test"), Some(&4));
-            assert_eq!(frags_map.get("/ bro"), Some(&6));
-            assert_eq!(frags_map.get("/ goldenboy"), Some(&5));
-            assert_eq!(frags_map.get("/ tincan"), Some(&8));
-            assert_eq!(frags_map.get("/ grue"), Some(&6));
+            let frags = frags_from_parsing(&demo_data)?;
+            assert_eq!(frags.len(), 5);
+            assert_eq!(frags.get("/ tincan"), Some(&8));
+            assert_eq!(frags.get("/ bro"), Some(&6));
+            assert_eq!(frags.get("/ grue"), Some(&6));
+            assert_eq!(frags.get("/ goldenboy"), Some(&5));
+            assert_eq!(frags.get("test"), Some(&4));
         }
 
         Ok(())
