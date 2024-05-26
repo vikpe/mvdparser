@@ -3,6 +3,8 @@ use std::io::Cursor;
 
 use anyhow::{anyhow as e, Result};
 
+use fragevent::FragEvent;
+
 use crate::mvd::message::io::ReadMessages;
 use crate::mvd::message::print::ReadPrint;
 use crate::mvd::message::update_frags::ReadUpdateFrags;
@@ -27,7 +29,7 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
             .is_ok_and(|t| t == MessageType::Print)
         {
             if let Ok(p) = body.read_print() {
-                if p.id == PrintId::Medium && !p.content.is_empty() {
+                if !p.content.is_empty() && PrintId::Medium == p.id {
                     print_frames.push((p, frame_info.clone()))
                 }
             }
@@ -41,40 +43,37 @@ pub fn frags(data: &[u8]) -> HashMap<String, i32> {
     for (print, frame_info) in print_frames {
         let content_u = quake_text::bytestr::to_unicode(&print.content);
 
-        match fragevent::FragEvent::try_from(content_u.trim_end()) {
-            Ok(event) => {
-                //println!("{:?}", event);
-                match event {
-                    fragevent::FragEvent::Frag { killer, .. } => {
-                        let killer = frags.entry(killer).or_insert(0);
-                        *killer += 1;
-                    }
-                    fragevent::FragEvent::Death { player } => {
-                        let player = frags.entry(player).or_insert(0);
-                        *player -= 1;
-                    }
-                    fragevent::FragEvent::Suicide { player } => {
-                        let player = frags.entry(player).or_insert(0);
-                        *player -= 2;
-                    }
-                    fragevent::FragEvent::SuicideByWeapon { player } => {
-                        let player = frags.entry(player).or_insert(0);
-                        *player -= 1;
-                    }
-                    fragevent::FragEvent::Teamkill { killer } => {
-                        let killer = frags.entry(killer).or_insert(0);
+        match FragEvent::try_from(content_u.trim_end()) {
+            Ok(event) => match event {
+                FragEvent::Frag { killer, .. } => {
+                    let killer = frags.entry(killer).or_insert(0);
+                    *killer += 1;
+                }
+                FragEvent::Death { player } => {
+                    let player = frags.entry(player).or_insert(0);
+                    *player -= 1;
+                }
+                FragEvent::Suicide { player } => {
+                    let player = frags.entry(player).or_insert(0);
+                    *player -= 2;
+                }
+                FragEvent::SuicideByWeapon { player } => {
+                    let player = frags.entry(player).or_insert(0);
+                    *player -= 1;
+                }
+                FragEvent::Teamkill { killer } => {
+                    let killer = frags.entry(killer).or_insert(0);
+                    *killer -= 1;
+                }
+                FragEvent::TeamkillByUnknown { victim } => {
+                    if let Ok(name) = find_team_killer(data, frame_info.index, &victim) {
+                        let killer = frags.entry(name).or_insert(0);
                         *killer -= 1;
                     }
-                    fragevent::FragEvent::TeamkillByUnknown { victim } => {
-                        if let Ok(name) = find_team_killer(data, frame_info.index, &victim) {
-                            let killer = frags.entry(name).or_insert(0);
-                            *killer -= 1;
-                        }
-                    }
                 }
-            }
-            Err(e) => {
-                println!("UNKNOWN {:?}", e);
+            },
+            Err(_e) => {
+                // println!("UNKNOWN {:?}", e);
             }
         }
     }

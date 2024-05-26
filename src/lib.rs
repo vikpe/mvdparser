@@ -21,6 +21,7 @@ pub mod all {
     pub use crate::clientinfo::*;
     pub use crate::clients::*;
     pub use crate::duration::*;
+    pub use crate::flags::*;
     pub use crate::frags::*;
     pub use crate::ktxstats::*;
     pub use crate::matchdate::*;
@@ -41,6 +42,9 @@ mod client;
 mod clientinfo;
 mod clients;
 mod duration;
+mod flagevent;
+mod flagprint;
+mod flags;
 mod fragevent;
 mod fragprint;
 mod frags;
