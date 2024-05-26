@@ -1,14 +1,17 @@
 use std::str::from_utf8;
 
+use anyhow::{anyhow as e, Result};
 use bstr::ByteSlice;
 use ktxstats::v3::KtxstatsV3;
 
 use crate::qw::HiddenMessage;
 use crate::{block, frame};
 
-pub fn ktxstats_v3(data: &[u8]) -> Option<KtxstatsV3> {
-    let stats_str = ktxstats_string(data)?;
-    ktxstats::v3::KtxstatsV3::try_from(stats_str.as_str()).ok()
+pub fn ktxstats_v3(data: &[u8]) -> Result<KtxstatsV3> {
+    let Some(stats_str) = ktxstats_string(data) else {
+        return Err(e!("ktxstats_v3: Unable to find ktxstats"));
+    };
+    ktxstats::v3::KtxstatsV3::try_from(stats_str.as_str()).map_err(|err| e!(err))
 }
 
 pub fn ktxstats_string(data: &[u8]) -> Option<String> {
@@ -50,11 +53,9 @@ mod tests {
     #[test]
     fn test_ktxstats_v3() -> Result<()> {
         let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
-        let stats = ktxstats_v3(&demo_data).unwrap();
-
+        let stats = ktxstats_v3(&demo_data)?;
         assert_eq!(stats.version, 3);
         assert_eq!(stats.hostname, "QUAKE.SE KTX:28502".to_string());
-
         Ok(())
     }
 
