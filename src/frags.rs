@@ -10,9 +10,26 @@ use crate::mvd::message::print::ReadPrint;
 use crate::mvd::message::update_frags::ReadUpdateFrags;
 use crate::mvd::message::Print;
 use crate::qw::{MessageType, PrintId};
-use crate::{clients, fragevent, frame};
+use crate::{clients, fragevent, frame, ktxstats_v3};
 
 pub fn frags(data: &[u8]) -> HashMap<String, i32> {
+    if let Ok(frags) = frags_from_ktxstats(data) {
+        frags
+    } else {
+        frags_from_parsing(data)
+    }
+}
+
+fn frags_from_ktxstats(data: &[u8]) -> Result<HashMap<String, i32>> {
+    let stats = ktxstats_v3(data)?;
+    let frags_per_player = stats
+        .players
+        .iter()
+        .map(|p| (p.name.clone(), p.stats.frags));
+    Ok(HashMap::from_iter(frags_per_player))
+}
+
+fn frags_from_parsing(data: &[u8]) -> HashMap<String, i32> {
     let mut index = 0;
     let mut print_frames: Vec<(Print, frame::Info)> = vec![];
 
@@ -148,7 +165,44 @@ mod tests {
     fn test_frags() -> Result<()> {
         {
             let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
-            let frags_map = frags(&demo_data);
+            assert_eq!(
+                frags_from_ktxstats(&demo_data)?,
+                frags_from_parsing(&demo_data)
+            );
+        }
+
+        {
+            let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
+            assert_eq!(
+                frags_from_ktxstats(&demo_data)?,
+                frags_from_parsing(&demo_data)
+            );
+        }
+
+        {
+            let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
+            assert_eq!(
+                frags_from_ktxstats(&demo_data)?,
+                frags_from_parsing(&demo_data)
+            );
+        }
+
+        {
+            let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
+            assert_eq!(
+                frags_from_ktxstats(&demo_data)?,
+                frags_from_parsing(&demo_data)
+            );
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_frags_from_ktxstats_v3() -> Result<()> {
+        {
+            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
+            let frags_map = frags_from_ktxstats(&demo_data)?;
             assert_eq!(frags_map.len(), 2);
             assert_eq!(frags_map.get("eQu"), Some(&19));
             assert_eq!(frags_map.get("KabÏÏm"), Some(&20));
@@ -156,7 +210,7 @@ mod tests {
 
         {
             let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
-            let frags_map = frags(&demo_data);
+            let frags_map = frags_from_ktxstats(&demo_data)?;
             assert_eq!(frags_map.len(), 2);
             assert_eq!(frags_map.get("HoLy"), Some(&25));
             assert_eq!(frags_map.get("äáçï"), Some(&31));
@@ -164,7 +218,7 @@ mod tests {
 
         {
             let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
-            let frags_map = frags(&demo_data);
+            let frags_map = frags_from_ktxstats(&demo_data)?;
             assert_eq!(frags_map.len(), 8);
             assert_eq!(frags_map.get("conan"), Some(&71));
             assert_eq!(frags_map.get("djevulsk"), Some(&74));
@@ -178,7 +232,53 @@ mod tests {
 
         {
             let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
-            let frags_map = frags(&demo_data);
+            let frags_map = frags_from_ktxstats(&demo_data)?;
+            assert_eq!(frags_map.len(), 5);
+            assert_eq!(frags_map.get("test"), Some(&4));
+            assert_eq!(frags_map.get("/ bro"), Some(&6));
+            assert_eq!(frags_map.get("/ goldenboy"), Some(&5));
+            assert_eq!(frags_map.get("/ tincan"), Some(&8));
+            assert_eq!(frags_map.get("/ grue"), Some(&6));
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_frags_from_parsing() -> Result<()> {
+        {
+            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
+            let frags_map = frags_from_parsing(&demo_data);
+            assert_eq!(frags_map.len(), 2);
+            assert_eq!(frags_map.get("eQu"), Some(&19));
+            assert_eq!(frags_map.get("KabÏÏm"), Some(&20));
+        }
+
+        {
+            let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
+            let frags_map = frags_from_parsing(&demo_data);
+            assert_eq!(frags_map.len(), 2);
+            assert_eq!(frags_map.get("HoLy"), Some(&25));
+            assert_eq!(frags_map.get("äáçï"), Some(&31));
+        }
+
+        {
+            let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
+            let frags_map = frags_from_parsing(&demo_data);
+            assert_eq!(frags_map.len(), 8);
+            assert_eq!(frags_map.get("conan"), Some(&71));
+            assert_eq!(frags_map.get("djevulsk"), Some(&74));
+            assert_eq!(frags_map.get("elguapo"), Some(&60));
+            assert_eq!(frags_map.get("muttan"), Some(&89));
+            assert_eq!(frags_map.get("tco.........áøå"), Some(&32));
+            assert_eq!(frags_map.get("trl.........áøå"), Some(&26));
+            assert_eq!(frags_map.get("tim.........áøå"), Some(&33));
+            assert_eq!(frags_map.get("bar.........áøå"), Some(&27));
+        }
+
+        {
+            let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
+            let frags_map = frags_from_parsing(&demo_data);
             assert_eq!(frags_map.len(), 5);
             assert_eq!(frags_map.get("test"), Some(&4));
             assert_eq!(frags_map.get("/ bro"), Some(&6));
