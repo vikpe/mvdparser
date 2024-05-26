@@ -32,14 +32,14 @@ pub fn player_flag_events(data: &[u8]) -> Result<HashMap<String, PlayerFlagEvent
                 if let Ok(p) = body.read_print() {
                     if p.id == PrintId::High && !p.content.is_empty() {
                         if current_print.is_empty() {
+                            current_print.clone_from(&p.content);
+                        } else if is_message_suffix(&p.content) {
                             current_print.extend_from_slice(&p.content);
-                        } else {
-                            if is_message_suffix(&p.content) {
-                                current_print.extend_from_slice(&p.content);
-                            }
-
                             prints.push(current_print.clone());
                             current_print = vec![];
+                        } else {
+                            prints.push(current_print.clone());
+                            current_print.clone_from(&p.content);
                         }
                     }
                 }
@@ -90,12 +90,12 @@ pub fn player_flag_events(data: &[u8]) -> Result<HashMap<String, PlayerFlagEvent
                     let pfe = events_pp.entry(player).or_default();
                     pfe.returns += 1;
                 }
-                FlagEvent::ReturnedFlagAssist { player } => {
-                    let pfe = events_pp.entry(player).or_default();
+                FlagEvent::FraggedCarrier { player } => {
+                    let pfe = events_pp.entry(player.clone()).or_default();
                     pfe.carrier_frags += 1;
                 }
             },
-            Err(_e) => {
+            Err(_) => {
                 // println!("UNKNOWN {:?}", e);
             }
         }
@@ -190,7 +190,7 @@ mod tests {
                 events.get("ì÷ú\u{AD}velocity"),
                 Some(&PlayerFlagEvents {
                     captures: 6,
-                    carrier_frags: 1,
+                    carrier_frags: 2,
                     defends: 4,
                     pickups: 7,
                     returns: 4,
@@ -202,6 +202,7 @@ mod tests {
                 Some(&PlayerFlagEvents {
                     captures: 2,
                     carrier_defends: 1,
+                    carrier_frags: 1,
                     defends: 3,
                     pickups: 3,
                     returns: 3,
@@ -212,6 +213,7 @@ mod tests {
                 events.get("ì÷ú\u{AD}lag"),
                 Some(&PlayerFlagEvents {
                     captures: 1,
+                    carrier_frags: 1,
                     pickups: 4,
                     returns: 2,
                     ..Default::default()
@@ -220,7 +222,7 @@ mod tests {
             assert_eq!(
                 events.get("ì÷ú\u{AD}xunito"),
                 Some(&PlayerFlagEvents {
-                    carrier_frags: 1,
+                    carrier_frags: 2,
                     defends: 3,
                     returns: 2,
                     ..Default::default()
@@ -230,7 +232,7 @@ mod tests {
                 events.get("lwz-brunelson"),
                 Some(&PlayerFlagEvents {
                     carrier_defends: 1,
-                    carrier_frags: 1,
+                    carrier_frags: 2,
                     defends: 1,
                     returns: 3,
                     ..Default::default()

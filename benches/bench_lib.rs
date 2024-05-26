@@ -13,6 +13,10 @@ fn lib_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("lib");
     group.throughput(Throughput::Bytes(data.len() as u64));
 
+    group.bench_function("flags", |b| {
+        b.iter(|| mvdparser::all::player_flag_events(&data))
+    });
+
     group.bench_function("players", |b| b.iter(|| mvdparser::all::players(&data)));
 
     group.bench_function("players_from_ktxstats", |b| {
