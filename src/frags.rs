@@ -38,7 +38,7 @@ fn frags_from_parsing(data: &[u8]) -> Result<HashMap<String, i32>> {
 
         let mut body = Cursor::new(&data[frame_info.clone().body_range]);
 
-        if body
+        while body
             .read_message_type()
             .is_ok_and(|t| t == MessageType::Print)
         {
@@ -56,9 +56,9 @@ fn frags_from_parsing(data: &[u8]) -> Result<HashMap<String, i32>> {
     let mut frags_pp = HashMap::from_iter(players.iter().cloned().map(|c| (c.name.clone(), 0)));
 
     for (print, frame_info) in print_frames {
-        let content_u = quake_text::bytestr::to_unicode(&print.content);
+        let print_u = quake_text::bytestr::to_unicode(&print.content);
 
-        match FragEvent::try_from(content_u.trim_end()) {
+        match FragEvent::try_from(print_u.trim_end()) {
             Ok(event) => match event {
                 FragEvent::Frag { killer, .. } => {
                     let killer = frags_pp.entry(killer).or_insert(0);
