@@ -14,7 +14,7 @@ pub fn prints(data: &[u8]) -> Vec<Print> {
         if info.body_size > 0 {
             let mut body = Cursor::new(&data[info.body_range]);
 
-            if body
+            while body
                 .read_message_type()
                 .is_ok_and(|t| t == MessageType::Print)
             {
@@ -47,14 +47,18 @@ mod tests {
         let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
         let prints = prints(&demo_data);
 
-        assert_eq!(1225, prints.len());
+        assert_eq!(1273, prints.len());
         assert_eq!(
             format!("{:?}", prints[0]),
             r#"Print { id: High, content: "bar.........axe is ready [oeks]_" }"#
         );
         assert_eq!(
             format!("{:?}", prints[1]),
-            r#"Print { id: Chat, content: "Server starts recording (memory):_4on4_oeks_vs_tsq[dm2]20240426-1716.mvd_" }"#
+            r#"Print { id: High, content: "All players ready_" }"#
+        );
+        assert_eq!(
+            format!("{:?}", prints[2]),
+            r#"Print { id: High, content: "Timer started_" }"#
         );
 
         Ok(())
