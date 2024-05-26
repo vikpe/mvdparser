@@ -176,24 +176,6 @@ mod tests {
             assert_eq!(frags_map.get("bar.........áøå"), Some(&27));
         }
 
-        /*
-        {
-            let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?;
-            let frags_map = frags(&demo_data);
-            assert_eq!(frags_map.len(), 11);
-            assert_eq!(frags_map.get("ì÷ú\u{AD}velocity"), Some(&164));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}lethalwiz"), Some(&140));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}xunito"), Some(&128));
-            assert_eq!(frags_map.get("lwz-brunelson"), Some(&120));
-            assert_eq!(frags_map.get("ì÷ú\u{AD}lag"), Some(&118));
-            assert_eq!(frags_map.get("CCTãáöåòïî"), Some(&29));
-            assert_eq!(frags_map.get("CCTâéìì"), Some(&23));
-            assert_eq!(frags_map.get("CCTÓèéîéîç"), Some(&19));
-            assert_eq!(frags_map.get("CCTäêåöõìóë"), Some(&15));
-            assert_eq!(frags_map.get("CCTÈåíìïãë"), Some(&10));
-        }
-        */
-
         {
             let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
             let frags_map = frags(&demo_data);
