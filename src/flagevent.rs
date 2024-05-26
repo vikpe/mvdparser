@@ -20,11 +20,11 @@ impl TryFrom<&str> for FlagEvent {
         let print_types: Vec<(usize, Vec<&str>)> = vec![
             (1, flagprint::X_CAPTURED_FLAG.to_vec()),
             (2, flagprint::X_DEFENDS_FLAG.to_vec()),
-            (3, flagprint::X_DEFENDS_VS_AGGRESSIVE.to_vec()),
+            (3, flagprint::X_DEFENDS_CARRIER_AGGR.to_vec()),
             (4, flagprint::X_DEFENDS_CARRIER.to_vec()),
             (5, flagprint::X_GOT_FLAG.to_vec()),
             (6, flagprint::X_RETURNED_FLAG.to_vec()),
-            (7, flagprint::X_RETURNED_ASSIST.to_vec()),
+            (7, flagprint::X_FRAGS_CARRIER.to_vec()),
         ];
 
         for (index, needles) in print_types {

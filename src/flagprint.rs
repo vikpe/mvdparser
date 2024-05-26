@@ -8,7 +8,7 @@ pub const X_DEFENDS_CARRIER: [&str; 2] = [
     " defends ÂÌÕÅ's flag carrier\n",
 ];
 
-pub const X_DEFENDS_VS_AGGRESSIVE: [&str; 2] = [
+pub const X_DEFENDS_CARRIER_AGGR: [&str; 2] = [
     " defends ÒÅÄ's flag carrier against an aggressive enemy\n",
     " defends ÂÌÕÅ's flag carrier against an aggressive enemy\n",
 ];
@@ -17,7 +17,7 @@ pub const X_GOT_FLAG: [&str; 2] = [" çïô the ÒÅÄ flag!\n", " çïô the Â
 
 pub const X_RETURNED_FLAG: [&str; 2] = [" òåôõòîåä the ÒÅÄ flag!\n", " òåôõòîåä the ÂÌÕÅ flag!\n"];
 
-pub const X_RETURNED_ASSIST: [&str; 2] = [
+pub const X_FRAGS_CARRIER: [&str; 2] = [
     " gets an assist for returning his flag!\n",
     " gets an assist for fragging the flag carrier!\n",
 ];
