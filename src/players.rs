@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use anyhow::{anyhow as e, Result};
+use anyhow::Result;
 
 use crate::clients::clients;
 use crate::player::Player;
@@ -11,9 +11,7 @@ pub fn players(data: &[u8]) -> Result<Vec<Player>> {
 }
 
 pub fn players_from_ktxstats(data: &[u8]) -> Result<Vec<Player>> {
-    let Some(stats) = ktxstats_v3(data) else {
-        return Err(e!("Failed to parse ktxstats"));
-    };
+    let stats = ktxstats_v3(data)?;
     let mut players: Vec<Player> = stats.players.iter().map(Player::from).collect();
     players.sort_by(player::sort());
     Ok(players)
