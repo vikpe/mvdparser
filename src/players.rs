@@ -20,7 +20,7 @@ pub fn players_from_ktxstats(data: &[u8]) -> Result<Vec<Player>> {
 pub fn players_from_parsing(data: &[u8]) -> Result<Vec<Player>> {
     let clients = clients(data)?;
     let pings = pings(data)?;
-    let frags = frags(data);
+    let frags = frags(data)?;
     let mut pmap: HashMap<u8, Player> = HashMap::new();
 
     for c in clients.iter().filter(|c| !c.is_spectator) {

@@ -12,17 +12,6 @@ use crate::mvd::message::io::ReadMessages;
 use crate::mvd::message::print::ReadPrint;
 use crate::qw::{MessageType, PrintId};
 
-pub mod bonus {
-    pub const CAPTURE: i32 = 15;
-    pub const CAPTURE_TEAM: i32 = 10;
-    pub const CARRIER_DEFEND: i32 = 1;
-    pub const CARRIER_DEFEND_VS_AGGRESSIVE: i32 = 2;
-    pub const CARRIER_FRAG: i32 = 2;
-    pub const FLAG_DEFEND: i32 = 2;
-    pub const RETURN_FLAG_ASSIST: i32 = 1;
-    pub const RETURN_FLAG: i32 = 1;
-}
-
 pub fn player_flag_events(data: &[u8]) -> Result<HashMap<String, PlayerFlagEvents>> {
     let mut index = 0;
 
@@ -127,35 +116,14 @@ fn is_message_suffix(print: &[u8]) -> bool {
 }
 
 #[derive(Debug, Default, PartialEq, Eq)]
-pub struct PlayerFlagScores {
-    pub player: i32,
-    pub team: i32,
-}
-
-impl From<&PlayerFlagEvents> for PlayerFlagScores {
-    fn from(value: &PlayerFlagEvents) -> Self {
-        let mut scores = PlayerFlagScores::default();
-        scores.player += bonus::CAPTURE * value.captures as i32;
-        scores.player += bonus::CARRIER_FRAG * value.carrier_frags as i32;
-        scores.player += bonus::CARRIER_DEFEND * value.carrier_defends as i32;
-        scores.player +=
-            bonus::CARRIER_DEFEND_VS_AGGRESSIVE * value.carrier_defends_vs_aggressive as i32;
-        scores.player += bonus::FLAG_DEFEND * value.defends as i32;
-        scores.player += bonus::RETURN_FLAG * value.returns as i32;
-        scores.team += bonus::CAPTURE_TEAM * value.captures as i32;
-        scores
-    }
-}
-
-#[derive(Debug, Default, PartialEq, Eq)]
 pub struct PlayerFlagEvents {
-    captures: u8,
-    pickups: u8,
-    returns: u8,
-    carrier_frags: u8,
-    defends: u8,
-    carrier_defends: u8,
-    carrier_defends_vs_aggressive: u8,
+    pub captures: u8,
+    pub pickups: u8,
+    pub returns: u8,
+    pub carrier_frags: u8,
+    pub defends: u8,
+    pub carrier_defends: u8,
+    pub carrier_defends_vs_aggressive: u8,
 }
 
 #[cfg(test)]
@@ -271,26 +239,5 @@ mod tests {
         }
 
         Ok(())
-    }
-
-    #[test]
-    fn test_player_flag_scores() {
-        let events = PlayerFlagEvents {
-            captures: 1,                      // 15
-            pickups: 2,                       //
-            returns: 3,                       // 3
-            carrier_frags: 4,                 // 8
-            defends: 5,                       // 10
-            carrier_defends: 6,               // 6
-            carrier_defends_vs_aggressive: 7, // 14
-        };
-
-        assert_eq!(
-            PlayerFlagScores::from(&events),
-            PlayerFlagScores {
-                player: 56,
-                team: 10
-            }
-        );
     }
 }
