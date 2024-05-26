@@ -16,6 +16,15 @@ pub fn clients(data: &[u8]) -> Result<Vec<Client>> {
     Ok(clients)
 }
 
+pub fn player_clients(data: &[u8]) -> Result<Vec<Client>> {
+    let players: Vec<Client> = clients(data)?
+        .iter()
+        .cloned()
+        .filter(|c| !c.is_spectator)
+        .collect();
+    Ok(players)
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs::read;
@@ -26,7 +35,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_clientinfo() -> Result<()> {
+    fn test_clients() -> Result<()> {
         assert_eq!(
             clients(&read(
                 "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
@@ -46,6 +55,35 @@ mod tests {
                     team: "lqwc".to_string(),
                     color: [12, 11],
                     is_spectator: true,
+                    is_bot: false,
+                },
+                Client {
+                    number: 2,
+                    name: "KabÏÏm".to_string(),
+                    team: "".to_string(),
+                    color: [2, 2],
+                    is_spectator: false,
+                    is_bot: false,
+                },
+            ]
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_player_clients() -> Result<()> {
+        assert_eq!(
+            player_clients(&read(
+                "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
+            )?)?,
+            vec![
+                Client {
+                    number: 0,
+                    name: "eQu".to_string(),
+                    team: "red".to_string(),
+                    color: [4, 4],
+                    is_spectator: false,
                     is_bot: false,
                 },
                 Client {
