@@ -1,6 +1,6 @@
 use anyhow::{anyhow as e, Result};
 
-use crate::fragmessage::{
+use crate::fragprint::{
     UNKNOWN_TEAMKILL_X, WILDCARD, X_DEATH, X_FRAG_Y, X_SUICIDE, X_SUICIDE_BY_WEAPON,
     X_TEAMKILL_UNKNOWN, Y_FRAG_X,
 };

@@ -46,7 +46,7 @@ mod flagevent;
 mod flagprint;
 mod flags;
 mod fragevent;
-mod fragmessage;
+mod fragprint;
 mod frags;
 mod frame;
 mod ktxstats;
