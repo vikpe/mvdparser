@@ -52,6 +52,8 @@ pub fn teams_from_players(players: &[Player]) -> Vec<Team> {
         teams.push(Team::from(teamplayers.as_slice()))
     }
 
+    teams.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+
     teams
 }
 
@@ -119,18 +121,18 @@ mod tests {
                 teams_from_players(&players),
                 vec![
                     Team {
-                        name: "red".to_string(),
-                        color: [4, 3],
-                        frags: 70,
-                        ping: 19,
-                        players: vec![red_alpha, red_beta,],
-                    },
-                    Team {
                         name: "blue".to_string(),
                         color: [11, 10],
                         frags: 29,
                         ping: 52,
                         players: vec![blue_gamma,],
+                    },
+                    Team {
+                        name: "red".to_string(),
+                        color: [4, 3],
+                        frags: 70,
+                        ping: 19,
+                        players: vec![red_alpha, red_beta,],
                     },
                 ]
             );
