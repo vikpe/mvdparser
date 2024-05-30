@@ -1,63 +1,10 @@
-use std::collections::HashMap;
-
 use anyhow::Result;
 
 use crate::players;
-use crate::team::Team;
+use crate::team::{teams_from_players, Team};
 
 pub fn teams(data: &[u8]) -> Result<Vec<Team>> {
-    let players = players(data)?;
-
-    let mut tmap: HashMap<String, Team> = HashMap::new();
-    for player in players.iter() {
-        let team = tmap.entry(player.team.clone()).or_insert(Team {
-            name: player.team.clone(),
-            players: vec![],
-            frags: 0,
-            ping: 0,
-            color: [0, 0],
-        });
-
-        team.players.push(player.clone());
-        team.frags += player.frags;
-        team.ping += player.ping;
-    }
-
-    let mut teams: Vec<Team> = tmap.values().cloned().collect();
-    teams.sort_by(|b, a| a.frags.cmp(&b.frags));
-
-    for t in teams.iter_mut() {
-        t.ping = (t.ping as f32 / t.players.len() as f32).round() as u32;
-        let player_colors: Vec<[u8; 2]> = t.players.iter().map(|p| p.color).collect();
-        t.color = majority_color(&player_colors).unwrap_or(players[0].color);
-    }
-
-    Ok(teams)
-}
-
-fn majority_color(colors: &[[u8; 2]]) -> Option<[u8; 2]> {
-    match colors.len() {
-        0 => return None,
-        1 | 2 => return Some(colors[0]),
-        _ => {}
-    };
-
-    let mut color_count: HashMap<[u8; 2], u8> = HashMap::new();
-    for color in colors.iter() {
-        let count = color_count.entry(*color).or_insert(0);
-        *count += 1;
-    }
-
-    let mut max_color = None;
-    let mut max_count = 0;
-    for (color, count) in color_count.iter() {
-        if *count > max_count {
-            max_color = Some(*color);
-            max_count = *count;
-        }
-    }
-
-    max_color
+    Ok(teams_from_players(&players(data)?))
 }
 
 #[cfg(test)]
@@ -72,7 +19,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_players() -> Result<()> {
+    fn test_teams() -> Result<()> {
         {
             let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd");
             assert_eq!(
@@ -163,17 +110,5 @@ mod tests {
         }
 
         Ok(())
-    }
-
-    #[test]
-    fn test_majority_color() {
-        {
-            let colors = vec![[4, 3], [11, 10]];
-            assert_eq!(majority_color(&colors), Some([4, 3]));
-        }
-        {
-            let colors = vec![[4, 3], [11, 10], [0, 0], [11, 10]];
-            assert_eq!(majority_color(&colors), Some([11, 10]));
-        }
     }
 }
