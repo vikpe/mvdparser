@@ -14,7 +14,7 @@ pub fn serverinfo_string(data: &[u8]) -> Option<String> {
         br#"fullserverinfo ""#,
         &[b'"'],
     )?;
-    String::from_utf8(data[from..to].to_vec()).ok()
+    Some(quake_text::bytestr::to_utf8(&data[from..to]))
 }
 
 #[cfg(test)]
