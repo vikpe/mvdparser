@@ -16,12 +16,11 @@ pub fn clientinfo_strings(data: &[u8]) -> Result<Vec<String>> {
     let Some(mut offset) = data.find(CMD_SPAWN) else {
         return Err(e!("Unable to find clientinfo strings"));
     };
-
     const MAX_PLAYERS: usize = 24;
     const MAX_LOOKAHEAD: usize = 256;
     let max_offset: usize = offset + MAX_PLAYERS * MAX_LOOKAHEAD;
     const MIN_LEN: usize = r#"\name\ "#.len();
-    const MAX_LEN: usize = 128;
+    const MAX_LEN: usize = 256;
 
     let mut result: Vec<String> = vec![];
 
