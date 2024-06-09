@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
+use ktxstats::v3::KtxstatsV3;
 
 use crate::clients::clients;
 use crate::frags::frags_per_player_name;
@@ -10,11 +11,14 @@ use crate::player;
 use crate::player::Player;
 
 pub fn players(data: &[u8]) -> Result<Vec<Player>> {
-    players_from_ktxstats(data).or_else(|_| players_from_parsing(data))
+    if let Ok(stats) = ktxstats_v3(data) {
+        players_from_ktxstats(&stats)
+    } else {
+        players_from_parsing(data)
+    }
 }
 
-pub fn players_from_ktxstats(data: &[u8]) -> Result<Vec<Player>> {
-    let stats = ktxstats_v3(data)?;
+pub fn players_from_ktxstats(stats: &KtxstatsV3) -> Result<Vec<Player>> {
     let mut players: Vec<Player> = stats.players.iter().map(Player::from).collect();
     players.sort_by(player::sort());
     Ok(players)
@@ -57,46 +61,46 @@ mod tests {
         {
             let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
             let from_parsing = players_from_parsing(&demo_data)?;
-            let from_ktx = players_from_ktxstats(&demo_data)?;
+            let from_ktxstats = players_from_ktxstats(&ktxstats_v3(&demo_data)?)?;
 
-            assert_eq!(from_parsing.len(), from_ktx.len());
+            assert_eq!(from_parsing.len(), from_ktxstats.len());
             for n in 0..from_parsing.len() {
-                assert_eq!(from_parsing[n].frags, from_ktx[n].frags);
-                assert_eq!(from_parsing[n].name, from_ktx[n].name);
-                assert_eq!(from_parsing[n].team, from_ktx[n].team);
-                assert_eq!(from_parsing[n].color, from_ktx[n].color);
-                assert!(from_parsing[n].ping.abs_diff(from_ktx[n].ping) < 5);
-                assert_eq!(from_parsing[n].is_bot, from_ktx[n].is_bot);
+                assert_eq!(from_parsing[n].frags, from_ktxstats[n].frags);
+                assert_eq!(from_parsing[n].name, from_ktxstats[n].name);
+                assert_eq!(from_parsing[n].team, from_ktxstats[n].team);
+                assert_eq!(from_parsing[n].color, from_ktxstats[n].color);
+                assert!(from_parsing[n].ping.abs_diff(from_ktxstats[n].ping) < 5);
+                assert_eq!(from_parsing[n].is_bot, from_ktxstats[n].is_bot);
             }
         }
         {
             let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
             let from_parsing = players_from_parsing(&demo_data)?;
-            let from_ktx = players_from_ktxstats(&demo_data)?;
+            let from_ktxstats = players_from_ktxstats(&ktxstats_v3(&demo_data)?)?;
 
-            assert_eq!(from_parsing.len(), from_ktx.len());
+            assert_eq!(from_parsing.len(), from_ktxstats.len());
             for n in 0..from_parsing.len() {
-                assert_eq!(from_parsing[n].frags, from_ktx[n].frags);
-                assert_eq!(from_parsing[n].name, from_ktx[n].name);
-                assert_eq!(from_parsing[n].team, from_ktx[n].team);
-                assert_eq!(from_parsing[n].color, from_ktx[n].color);
-                assert!(from_parsing[n].ping.abs_diff(from_ktx[n].ping) < 5);
-                assert_eq!(from_parsing[n].is_bot, from_ktx[n].is_bot);
+                assert_eq!(from_parsing[n].frags, from_ktxstats[n].frags);
+                assert_eq!(from_parsing[n].name, from_ktxstats[n].name);
+                assert_eq!(from_parsing[n].team, from_ktxstats[n].team);
+                assert_eq!(from_parsing[n].color, from_ktxstats[n].color);
+                assert!(from_parsing[n].ping.abs_diff(from_ktxstats[n].ping) < 5);
+                assert_eq!(from_parsing[n].is_bot, from_ktxstats[n].is_bot);
             }
         }
         {
             let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
             let from_parsing = players_from_parsing(&demo_data)?;
-            let from_ktx = players_from_ktxstats(&demo_data)?;
+            let from_ktxstats = players_from_ktxstats(&ktxstats_v3(&demo_data)?)?;
 
-            assert_eq!(from_parsing.len(), from_ktx.len());
+            assert_eq!(from_parsing.len(), from_ktxstats.len());
             for n in 0..from_parsing.len() {
-                assert_eq!(from_parsing[n].frags, from_ktx[n].frags);
-                assert_eq!(from_parsing[n].name, from_ktx[n].name);
-                assert_eq!(from_parsing[n].team, from_ktx[n].team);
-                assert_eq!(from_parsing[n].color, from_ktx[n].color);
-                assert!(from_parsing[n].ping.abs_diff(from_ktx[n].ping) < 5);
-                assert_eq!(from_parsing[n].is_bot, from_ktx[n].is_bot);
+                assert_eq!(from_parsing[n].frags, from_ktxstats[n].frags);
+                assert_eq!(from_parsing[n].name, from_ktxstats[n].name);
+                assert_eq!(from_parsing[n].team, from_ktxstats[n].team);
+                assert_eq!(from_parsing[n].color, from_ktxstats[n].color);
+                assert!(from_parsing[n].ping.abs_diff(from_ktxstats[n].ping) < 5);
+                assert_eq!(from_parsing[n].is_bot, from_ktxstats[n].is_bot);
             }
         }
 
@@ -320,9 +324,9 @@ mod tests {
     #[test]
     fn test_players_from_ktxstats() -> Result<()> {
         {
-            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd");
+            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
             assert_eq!(
-                players_from_ktxstats(&demo_data?)?,
+                players_from_ktxstats(&ktxstats_v3(&demo_data)?)?,
                 vec![
                     Player {
                         name: "KabÏÏm".to_string(),
@@ -344,9 +348,9 @@ mod tests {
             );
         }
         {
-            let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd");
+            let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?;
             assert_eq!(
-                players_from_ktxstats(&demo_data?)?,
+                players_from_ktxstats(&ktxstats_v3(&demo_data)?)?,
                 vec![
                     Player {
                         name: "ì÷ú\u{ad}velocity".to_string(),

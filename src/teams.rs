@@ -1,10 +1,16 @@
 use anyhow::Result;
+use ktxstats::v3::KtxstatsV3;
 
 use crate::players;
+use crate::players::players_from_ktxstats;
 use crate::team::{teams_from_players, Team};
 
 pub fn teams(data: &[u8]) -> Result<Vec<Team>> {
     Ok(teams_from_players(&players(data)?))
+}
+
+pub fn teams_from_ktxstats(stats: &KtxstatsV3) -> Result<Vec<Team>> {
+    Ok(teams_from_players(&players_from_ktxstats(stats)?))
 }
 
 #[cfg(test)]
@@ -14,6 +20,7 @@ mod tests {
     use anyhow::Result;
     use pretty_assertions::assert_eq;
 
+    use crate::ktxstats_v3;
     use crate::player::Player;
 
     use super::*;
@@ -106,6 +113,20 @@ mod tests {
                         ],
                     },
                 ]
+            );
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_teams_from_ktxstats() -> Result<()> {
+        {
+            let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
+
+            assert_eq!(
+                teams(&demo_data)?,
+                teams_from_ktxstats(&ktxstats_v3(&demo_data)?)?
             );
         }
 
