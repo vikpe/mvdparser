@@ -8,6 +8,7 @@ pub use team::Team;
 
 pub use crate::clientinfo::clientinfo;
 pub use crate::duration::{countdown_duration, demo_duration, match_duration};
+pub use crate::filename::filename;
 pub use crate::frags::frags_per_player_name;
 pub use crate::ktxstats::{ktxstats_string, ktxstats_v3};
 pub use crate::players::players;
@@ -42,6 +43,7 @@ mod client;
 mod clientinfo;
 mod clients;
 mod duration;
+mod filename;
 mod flags;
 mod frags;
 mod ktxstats;
