@@ -1,4 +1,5 @@
 use anyhow::Result;
+use quake_text::unicode;
 
 use crate::client::Client;
 use crate::clientinfo;
@@ -25,6 +26,14 @@ pub fn player_clients(data: &[u8]) -> Result<Vec<Client>> {
     Ok(players)
 }
 
+pub fn player_names(data: &[u8]) -> Result<Vec<String>> {
+    let names = player_clients(data)?
+        .iter()
+        .map(|c| c.name.clone())
+        .collect::<Vec<String>>();
+    Ok(unicode::sort(&names))
+}
+
 pub fn spectator_clients(data: &[u8]) -> Result<Vec<Client>> {
     let spectators = clients(data)?
         .iter()
@@ -32,6 +41,25 @@ pub fn spectator_clients(data: &[u8]) -> Result<Vec<Client>> {
         .cloned()
         .collect();
     Ok(spectators)
+}
+
+pub fn spectator_names(data: &[u8]) -> Result<Vec<String>> {
+    let names: Vec<String> = spectator_clients(data)?
+        .iter()
+        .map(|c| c.name.clone())
+        .collect();
+    Ok(unicode::sort(&names))
+}
+
+pub fn team_names(data: &[u8]) -> Result<Vec<String>> {
+    let mut names: Vec<String> = player_clients(data)?
+        .iter()
+        .map(|c| c.team.clone())
+        .collect();
+
+    names = unicode::sort(&names);
+    names.dedup();
+    Ok(names)
 }
 
 #[cfg(test)]
@@ -123,6 +151,71 @@ mod tests {
                 is_spectator: true,
                 is_bot: false,
             },]
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_spectator_names() -> Result<()> {
+        assert_eq!(
+            spectator_names(&read(
+                "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
+            )?)?,
+            vec!["[ServeMe]".to_string()]
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_player_names() -> Result<()> {
+        assert_eq!(
+            player_names(&read(
+                "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
+            )?)?,
+            vec!["eQu".to_string(), "KabÏÏm".to_string()]
+        );
+
+        assert_eq!(
+            player_names(&read(
+                "tests/files/2on2_sf_vs_red[frobodm2]220104-0915.mvd"
+            )?)?,
+            vec![
+                ": Sujoy".to_string(),
+                ": Timber".to_string(),
+                "> MrJustice".to_string(),
+                "Final".to_string(),
+            ]
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_team_names() -> Result<()> {
+        assert_eq!(
+            team_names(&read(
+                "tests/files/2on2_sf_vs_red[frobodm2]220104-0915.mvd"
+            )?)?,
+            vec!["=SF=".to_string(), "red".to_string()]
+        );
+
+        assert_eq!(
+            team_names(&read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?)?,
+            vec!["blue".to_string(), "red".to_string()]
+        );
+
+        assert_eq!(
+            team_names(&read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?)?,
+            vec!["oeks".to_string(), "tSÑ".to_string()]
+        );
+
+        assert_eq!(
+            team_names(&read(
+                "tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd"
+            )?)?,
+            vec!["blue".to_string(), "red".to_string()]
         );
 
         Ok(())

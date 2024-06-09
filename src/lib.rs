@@ -7,6 +7,9 @@ pub use server::Server;
 pub use team::Team;
 
 pub use crate::clientinfo::clientinfo;
+pub use crate::clients::{
+    player_clients, player_names, spectator_clients, spectator_names, team_names,
+};
 pub use crate::duration::{countdown_duration, demo_duration, match_duration};
 pub use crate::filename::filename;
 pub use crate::frags::frags_per_player_name;
