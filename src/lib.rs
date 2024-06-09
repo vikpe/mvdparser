@@ -18,6 +18,7 @@ pub use crate::teams::teams;
 pub use crate::timestamp::timestamp;
 
 pub mod all {
+    pub use crate::client::*;
     pub use crate::clientinfo::*;
     pub use crate::clients::*;
     pub use crate::duration::*;
@@ -26,9 +27,12 @@ pub mod all {
     pub use crate::ktxstats::*;
     pub use crate::matchdate::*;
     pub use crate::ping::*;
+    pub use crate::player::*;
     pub use crate::players::*;
     pub use crate::prints::*;
+    pub use crate::server::*;
     pub use crate::serverinfo::*;
+    pub use crate::team::*;
     pub use crate::teams::*;
     pub use crate::timestamp::*;
 }
