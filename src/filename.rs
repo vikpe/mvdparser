@@ -22,6 +22,15 @@ mod tests {
     fn test_filename() -> Result<()> {
         assert_eq!(
             filename(&read(
+                "tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd.ktxstats.json"
+            )?)
+            .unwrap_err()
+            .to_string(),
+            "Serverinfo not found".to_string()
+        );
+
+        assert_eq!(
+            filename(&read(
                 "tests/files/2on2_sf_vs_red[frobodm2]220104-0915.mvd"
             )?)?,
             "2on2_sf_vs_red[frobodm2]220104-0915.mvd".to_string()
