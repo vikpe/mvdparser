@@ -3,8 +3,11 @@ use std::collections::HashMap;
 use anyhow::Result;
 
 use crate::clients::clients;
+use crate::frags::frags_per_player_name;
+use crate::ktxstats::ktxstats_v3;
+use crate::ping::ping_per_player_number;
+use crate::player;
 use crate::player::Player;
-use crate::{frags, ktxstats_v3, pings, player};
 
 pub fn players(data: &[u8]) -> Result<Vec<Player>> {
     players_from_ktxstats(data).or_else(|_| players_from_parsing(data))
@@ -19,8 +22,8 @@ pub fn players_from_ktxstats(data: &[u8]) -> Result<Vec<Player>> {
 
 pub fn players_from_parsing(data: &[u8]) -> Result<Vec<Player>> {
     let clients = clients(data)?;
-    let pings = pings(data)?;
-    let frags = frags(data);
+    let pings = ping_per_player_number(data)?;
+    let frags = frags_per_player_name(data);
     let mut pmap: HashMap<u8, Player> = HashMap::new();
 
     for c in clients.iter().filter(|c| !c.is_spectator) {

@@ -1,10 +1,10 @@
 use std::io::Cursor;
 
-use crate::frame;
-use crate::mvd::message::io::ReadMessages;
-use crate::mvd::message::print::ReadPrint;
-use crate::mvd::message::Print;
-use crate::qw::MessageType;
+use crate::qw::frame;
+use crate::qw::message::message_type::ReadMessageType;
+use crate::qw::message::print::ReadPrint;
+use crate::qw::message::Print;
+use crate::qw::prot::MessageType;
 
 pub fn prints(data: &[u8]) -> Vec<Print> {
     let mut index = 0;

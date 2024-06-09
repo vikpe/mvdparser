@@ -1,6 +1,6 @@
 use std::io::{Cursor, Read};
 
-use crate::mvd::io::ReadPrimitives;
+use crate::qw::primitives::ReadPrimitives;
 
 #[derive(Debug, PartialEq)]
 pub struct UpdatePing {
@@ -33,7 +33,7 @@ impl<R: Read + ?Sized> ReadUpdatePing for R {}
 mod tests {
     use pretty_assertions::assert_eq;
 
-    use crate::mvd::message::UpdatePing;
+    use super::*;
 
     #[test]
     fn test_update_ping() {

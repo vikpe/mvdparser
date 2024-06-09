@@ -3,8 +3,8 @@ use std::io::{Cursor, Read};
 
 use anyhow::Result;
 
-use crate::mvd::io::ReadPrimitives;
-use crate::qw::PrintId;
+use crate::qw::primitives::ReadPrimitives;
+use crate::qw::prot::PrintId;
 
 #[derive(PartialEq)]
 pub struct Print {
@@ -51,8 +51,8 @@ mod tests {
     use anyhow::Result;
     use pretty_assertions::assert_eq;
 
-    use crate::mvd::message::Print;
-    use crate::qw::PrintId;
+    use crate::qw::message::Print;
+    use crate::qw::prot::PrintId;
 
     #[test]
     fn test_try_from() -> Result<()> {

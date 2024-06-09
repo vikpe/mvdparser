@@ -4,8 +4,8 @@ use anyhow::{anyhow as e, Result};
 use bstr::ByteSlice;
 use ktxstats::v3::KtxstatsV3;
 
-use crate::qw::HiddenMessage;
-use crate::{block, frame};
+use crate::qw::prot::HiddenMessage;
+use crate::qw::{block, frame};
 
 pub fn ktxstats_v3(data: &[u8]) -> Result<KtxstatsV3> {
     let stats_str = ktxstats_string(data)?;

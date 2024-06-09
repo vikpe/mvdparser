@@ -1,6 +1,6 @@
 use anyhow::{anyhow as e, Result};
 
-use crate::fragprint::{
+use crate::qw::fragprint::{
     UNKNOWN_TEAMKILL_X, WILDCARD, X_DEATH, X_FRAG_Y, X_SUICIDE, X_SUICIDE_BY_WEAPON,
     X_TEAMKILL_UNKNOWN, Y_FRAG_X,
 };
@@ -76,7 +76,7 @@ mod tests {
     use anyhow::Result;
     use pretty_assertions::assert_eq;
 
-    use crate::fragevent::FragEvent::{
+    use crate::qw::fragevent::FragEvent::{
         Death, Frag, Suicide, SuicideByWeapon, Teamkill, TeamkillByUnknown,
     };
 

@@ -1,5 +1,10 @@
 use std::io::{Error, ErrorKind, Read, Result};
 
+pub mod numsize {
+    pub const SHORT: usize = 2;
+    pub const LONG: usize = 4;
+}
+
 pub fn err_other(msg: &str) -> Error {
     Error::new(ErrorKind::Other, msg)
 }

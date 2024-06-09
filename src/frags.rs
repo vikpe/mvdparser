@@ -3,16 +3,16 @@ use std::io::Cursor;
 
 use anyhow::{anyhow as e, Result};
 
-use fragevent::FragEvent;
+use crate::clients;
+use crate::qw::fragevent::FragEvent;
+use crate::qw::frame;
+use crate::qw::message::message_type::ReadMessageType;
+use crate::qw::message::print::ReadPrint;
+use crate::qw::message::update_frags::ReadUpdateFrags;
+use crate::qw::message::Print;
+use crate::qw::prot::{MessageType, PrintId};
 
-use crate::mvd::message::io::ReadMessages;
-use crate::mvd::message::print::ReadPrint;
-use crate::mvd::message::update_frags::ReadUpdateFrags;
-use crate::mvd::message::Print;
-use crate::qw::{MessageType, PrintId};
-use crate::{clients, fragevent, frame};
-
-pub fn frags(data: &[u8]) -> HashMap<String, i32> {
+pub fn frags_per_player_name(data: &[u8]) -> HashMap<String, i32> {
     let mut index = 0;
     let mut print_frames: Vec<(Print, frame::Info)> = vec![];
 
@@ -145,10 +145,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_frags() -> Result<()> {
+    fn test_frags_per_player_name() -> Result<()> {
         {
             let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
-            let frags_map = frags(&demo_data);
+            let frags_map = frags_per_player_name(&demo_data);
             assert_eq!(frags_map.len(), 2);
             assert_eq!(frags_map.get("eQu"), Some(&19));
             assert_eq!(frags_map.get("KabÏÏm"), Some(&20));
@@ -156,7 +156,7 @@ mod tests {
 
         {
             let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
-            let frags_map = frags(&demo_data);
+            let frags_map = frags_per_player_name(&demo_data);
             assert_eq!(frags_map.len(), 2);
             assert_eq!(frags_map.get("HoLy"), Some(&25));
             assert_eq!(frags_map.get("äáçï"), Some(&31));
@@ -164,7 +164,7 @@ mod tests {
 
         {
             let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
-            let frags_map = frags(&demo_data);
+            let frags_map = frags_per_player_name(&demo_data);
             assert_eq!(frags_map.len(), 8);
             assert_eq!(frags_map.get("conan"), Some(&71));
             assert_eq!(frags_map.get("djevulsk"), Some(&74));
@@ -178,7 +178,7 @@ mod tests {
 
         {
             let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
-            let frags_map = frags(&demo_data);
+            let frags_map = frags_per_player_name(&demo_data);
             assert_eq!(frags_map.len(), 5);
             assert_eq!(frags_map.get("test"), Some(&4));
             assert_eq!(frags_map.get("/ bro"), Some(&6));

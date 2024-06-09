@@ -23,9 +23,13 @@ fn lib_benchmark(c: &mut Criterion) {
     });
     group.bench_function("teams", |b| b.iter(|| mvdparser::all::teams(&data)));
 
-    group.bench_function("pings", |b| b.iter(|| mvdparser::all::pings(&data)));
+    group.bench_function("ping", |b| {
+        b.iter(|| mvdparser::all::ping_per_player_number(&data))
+    });
 
-    group.bench_function("frags", |b| b.iter(|| mvdparser::all::frags(&data)));
+    group.bench_function("frags", |b| {
+        b.iter(|| mvdparser::all::frags_per_player_name(&data))
+    });
     group.bench_function("prints", |b| b.iter(|| mvdparser::all::prints(&data)));
 
     group.bench_function("clientinfo", |b| {

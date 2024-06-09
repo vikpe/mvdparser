@@ -1,6 +1,6 @@
 use anyhow::{anyhow as e, Result};
 
-use crate::flagprint;
+use crate::qw::flagprint;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum FlagEvent {

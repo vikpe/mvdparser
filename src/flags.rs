@@ -3,12 +3,12 @@ use std::io::Cursor;
 
 use bstr::ByteSlice;
 
-use crate::flagevent::FlagEvent;
-use crate::flagprint;
-use crate::frame;
-use crate::mvd::message::io::ReadMessages;
-use crate::mvd::message::print::ReadPrint;
-use crate::qw::{MessageType, PrintId};
+use crate::qw::flagevent::FlagEvent;
+use crate::qw::flagprint;
+use crate::qw::frame;
+use crate::qw::message::message_type::ReadMessageType;
+use crate::qw::message::print::ReadPrint;
+use crate::qw::prot::{MessageType, PrintId};
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct PlayerFlagEvents {
@@ -21,7 +21,7 @@ pub struct PlayerFlagEvents {
     carrier_defends_vs_aggressive: u8,
 }
 
-pub fn player_flag_events(data: &[u8]) -> HashMap<String, PlayerFlagEvents> {
+pub fn flag_events_per_player_name(data: &[u8]) -> HashMap<String, PlayerFlagEvents> {
     let mut index = 0;
 
     let mut prints: Vec<Vec<u8>> = vec![];
@@ -128,10 +128,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_player_flag_events() -> Result<()> {
+    fn test_flag_events_per_player_name() -> Result<()> {
         {
             let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?;
-            let events = player_flag_events(&demo_data);
+            let events = flag_events_per_player_name(&demo_data);
 
             assert_eq!(events.len(), 10);
 

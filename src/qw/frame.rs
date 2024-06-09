@@ -3,9 +3,8 @@ use std::ops::Range;
 
 use anyhow::{anyhow as e, Result};
 
-use crate::mvd::io::ReadPrimitives;
-use crate::numsize;
-use crate::qw::{Command, Target};
+use crate::qw::primitives::{numsize, ReadPrimitives};
+use crate::qw::prot::{Command, Target};
 
 pub const HEADER_SIZE: usize = numsize::SHORT + numsize::LONG;
 pub const MULTI_HEADER_SIZE: usize = HEADER_SIZE + numsize::LONG;

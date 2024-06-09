@@ -3,12 +3,12 @@ use std::io::Cursor;
 
 use anyhow::{anyhow as e, Result};
 
-use crate::frame;
-use crate::mvd::message::io::ReadMessages;
-use crate::mvd::message::update_ping::ReadUpdatePing;
-use crate::qw::MessageType;
+use crate::qw::frame;
+use crate::qw::message::message_type::ReadMessageType;
+use crate::qw::message::update_ping::ReadUpdatePing;
+use crate::qw::prot::MessageType;
 
-pub fn pings(data: &[u8]) -> Result<HashMap<u8, u32>> {
+pub fn ping_per_player_number(data: &[u8]) -> Result<HashMap<u8, u32>> {
     let max_samples: usize = 8;
     let mut sample_count: usize = 0;
     let mut index = 0;
@@ -69,16 +69,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_pings() -> Result<()> {
+    fn test_ping_per_player_number() -> Result<()> {
         {
             let demo_data: [u8; 10] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-            let err = pings(&demo_data).unwrap_err();
+            let err = ping_per_player_number(&demo_data).unwrap_err();
             assert_eq!(err.to_string(), "Unable to read pings".to_string());
         }
 
         {
             let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
-            let pings = pings(&demo_data)?;
+            let pings = ping_per_player_number(&demo_data)?;
             assert_eq!(pings.get(&0), Some(&25));
             assert_eq!(pings.get(&1), Some(&620));
             assert_eq!(pings.get(&2), Some(&29));
@@ -86,7 +86,7 @@ mod tests {
 
         {
             let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd");
-            let pings = pings(&demo_data?)?;
+            let pings = ping_per_player_number(&demo_data?)?;
             assert_eq!(pings.get(&0), Some(&26));
             assert_eq!(pings.get(&1), Some(&26));
             assert_eq!(pings.get(&2), Some(&666));
@@ -100,7 +100,7 @@ mod tests {
 
         {
             let demo_data = read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd");
-            let pings = pings(&demo_data?)?;
+            let pings = ping_per_player_number(&demo_data?)?;
             assert_eq!(pings.get(&0), Some(&19));
             assert_eq!(pings.get(&1), Some(&12));
             assert_eq!(pings.get(&2), Some(&30));
@@ -113,7 +113,7 @@ mod tests {
 
         {
             let demo_data = read("tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd");
-            let pings = pings(&demo_data?)?;
+            let pings = ping_per_player_number(&demo_data?)?;
             assert_eq!(pings.get(&0), Some(&14));
             assert_eq!(pings.get(&1), Some(&52));
             assert_eq!(pings.get(&2), Some(&38));
@@ -124,7 +124,7 @@ mod tests {
 
         {
             let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
-            let pings = pings(&demo_data)?;
+            let pings = ping_per_player_number(&demo_data)?;
             assert_eq!(pings.get(&0), Some(&557));
             assert_eq!(pings.get(&1), Some(&12));
             assert_eq!(pings.get(&2), Some(&12));

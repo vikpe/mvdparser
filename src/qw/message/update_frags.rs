@@ -1,6 +1,6 @@
 use std::io::{Cursor, Read};
 
-use crate::mvd::io::ReadPrimitives;
+use crate::qw::primitives::ReadPrimitives;
 
 #[derive(Debug, PartialEq)]
 pub struct UpdateFrags {
@@ -31,7 +31,7 @@ impl<R: Read + ?Sized> ReadUpdateFrags for R {}
 mod tests {
     use pretty_assertions::assert_eq;
 
-    use crate::mvd::message::UpdateFrags;
+    use super::*;
 
     #[test]
     fn test_update_frags() {

@@ -1,18 +1,22 @@
+use anyhow::{anyhow as e, Result};
 use chrono::{DateTime, LocalResult, TimeZone, Utc};
 
 use crate::matchdate::matchdate;
 use crate::serverinfo;
 
-pub fn timestamp(data: &[u8]) -> Option<DateTime<Utc>> {
-    timestamp_from_epoch(data).or_else(|| matchdate(data))
+pub fn timestamp(data: &[u8]) -> Result<DateTime<Utc>> {
+    timestamp_from_epoch(data).or_else(|_| matchdate(data))
 }
 
-fn timestamp_from_epoch(data: &[u8]) -> Option<DateTime<Utc>> {
-    let epoch = serverinfo(data)?.epoch?;
+pub fn timestamp_from_epoch(data: &[u8]) -> Result<DateTime<Utc>> {
+    let Some(epoch) = serverinfo(data)?.epoch else {
+        return Err(e!("Epoch not found in serverinfo"));
+    };
+
     match Utc.timestamp_opt(epoch as i64, 0) {
-        LocalResult::Single(ts) => Some(ts),
-        LocalResult::Ambiguous(earliest, _) => Some(earliest),
-        _ => None,
+        LocalResult::Single(ts) => Ok(ts),
+        LocalResult::Ambiguous(earliest, _) => Ok(earliest),
+        _ => Err(e!("Unable to parse timestamp from epoch")),
     }
 }
 
@@ -26,8 +30,8 @@ mod tests {
 
     use super::*;
 
-    fn to_timestamp_opt(str: &str) -> Option<DateTime<Utc>> {
-        Some(DateTime::parse_from_rfc3339(str).unwrap().to_utc())
+    fn to_timestamp(str: &str) -> DateTime<Utc> {
+        DateTime::parse_from_rfc3339(str).unwrap().to_utc()
     }
 
     #[test]
@@ -35,15 +39,15 @@ mod tests {
         assert_eq!(
             timestamp(&read(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd"
-            )?),
-            to_timestamp_opt("2024-04-26T14:59:29Z")
+            )?)?,
+            to_timestamp("2024-04-26T14:59:29Z")
         );
 
         assert_eq!(
             timestamp(&read(
                 "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
-            )?),
-            to_timestamp_opt("2024-04-22T10:38:20Z")
+            )?)?,
+            to_timestamp("2024-04-22T10:38:20Z")
         );
 
         Ok(())
@@ -54,15 +58,17 @@ mod tests {
         assert_eq!(
             timestamp_from_epoch(&read(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd"
-            )?),
-            None
+            )?)
+            .unwrap_err()
+            .to_string(),
+            "Epoch not found in serverinfo".to_string()
         );
 
         assert_eq!(
             timestamp_from_epoch(&read(
                 "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
-            )?),
-            to_timestamp_opt("2024-04-22T10:38:20Z")
+            )?)?,
+            to_timestamp("2024-04-22T10:38:20Z")
         );
 
         Ok(())
