@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use anyhow::{anyhow as e, Result};
 use bstr::ByteSlice;
 
 use crate::{frame, ktxstats_string, matchdate, util};
@@ -19,7 +20,9 @@ pub fn demo_duration(data: &[u8]) -> Option<Duration> {
 }
 
 pub fn match_duration(data: &[u8]) -> Option<Duration> {
-    match_duration_from_ktxstats(data).or_else(|| match_duration_from_seeking(data))
+    match_duration_from_ktxstats(data)
+        .ok()
+        .or_else(|| match_duration_from_seeking(data))
 }
 
 fn match_duration_from_seeking(data: &[u8]) -> Option<Duration> {
@@ -28,11 +31,14 @@ fn match_duration_from_seeking(data: &[u8]) -> Option<Duration> {
     Some(end - start)
 }
 
-fn match_duration_from_ktxstats(data: &[u8]) -> Option<Duration> {
+fn match_duration_from_ktxstats(data: &[u8]) -> Result<Duration> {
     let ktxstats_s = ktxstats_string(data)?;
-    let (from, to) = util::offsets_between(ktxstats_s.as_bytes(), br#""duration": "#, b",")?;
-    let duration_f: f64 = ktxstats_s[from..to].parse().ok()?;
-    Some(Duration::from_secs_f64(duration_f))
+    let Some((from, to)) = util::offsets_between(ktxstats_s.as_bytes(), br#""duration": "#, b",")
+    else {
+        return Err(e!("Duration not found in ktxstats"));
+    };
+    let duration_f: f64 = ktxstats_s[from..to].parse()?;
+    Ok(Duration::from_secs_f64(duration_f))
 }
 
 fn duration_until_offset(data: &[u8], target_offset: usize) -> Duration {

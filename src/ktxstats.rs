@@ -1,19 +1,24 @@
 use std::str::from_utf8;
 
+use anyhow::{anyhow as e, Result};
 use bstr::ByteSlice;
 use ktxstats::v3::KtxstatsV3;
 
 use crate::qw::HiddenMessage;
 use crate::{block, frame};
 
-pub fn ktxstats_v3(data: &[u8]) -> Option<KtxstatsV3> {
+pub fn ktxstats_v3(data: &[u8]) -> Result<KtxstatsV3> {
     let stats_str = ktxstats_string(data)?;
-    ktxstats::v3::KtxstatsV3::try_from(stats_str.as_str()).ok()
+    ktxstats::v3::KtxstatsV3::try_from(stats_str.as_str()).map_err(|err| e!(err))
 }
 
-pub fn ktxstats_string(data: &[u8]) -> Option<String> {
+pub fn ktxstats_string(data: &[u8]) -> Result<String> {
     const TOTAL_HEADER_SIZE: usize = frame::MULTI_HEADER_SIZE + block::HEADER_SIZE;
-    let mut offset = data.rfind(br#"{"version": "#)? - TOTAL_HEADER_SIZE;
+
+    let Some(mut offset) = data.rfind(br#"{"version": "#) else {
+        return Err(e!("ktxstats not found"));
+    };
+    offset -= TOTAL_HEADER_SIZE;
     let mut content = Vec::new();
 
     // read blocks
@@ -32,10 +37,7 @@ pub fn ktxstats_string(data: &[u8]) -> Option<String> {
         offset += info.body_size;
     }
 
-    match from_utf8(&content) {
-        Ok(str) => Some(str.to_string()),
-        Err(_) => None,
-    }
+    Ok(from_utf8(&content)?.to_string())
 }
 
 #[cfg(test)]
@@ -69,27 +71,24 @@ mod tests {
     fn test_ktxstats_string() -> Result<()> {
         {
             let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
-            let stats_str = strip(&read_to_string(
+            let expected = strip(&read_to_string(
                 "tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd.ktxstats.json",
             )?);
-            assert_eq!(
-                ktxstats_string(&demo_data).map(|s| strip(&s)),
-                Some(strip(&stats_str))
-            );
+            assert_eq!(strip(&ktxstats_string(&demo_data)?), strip(&expected));
         }
         {
             let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
-            let stats_str = strip(&read_to_string(
+            let expected = strip(&read_to_string(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd.ktxstats.json",
             )?);
-            assert_eq!(
-                ktxstats_string(&demo_data).map(|s| strip(&s)),
-                Some(strip(&stats_str))
-            );
+            assert_eq!(strip(&ktxstats_string(&demo_data)?), strip(&expected));
         }
         {
             let demo_data = read("tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd")?;
-            assert_eq!(ktxstats_string(&demo_data), None)
+            assert_eq!(
+                ktxstats_string(&demo_data).unwrap_err().to_string(),
+                "ktxstats not found"
+            );
         }
 
         Ok(())
