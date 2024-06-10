@@ -93,6 +93,8 @@ mod tests {
                     color: [4, 4],
                     is_spectator: false,
                     is_bot: false,
+                    auth_username: None,
+                    auth_cc: None,
                 },
                 Client {
                     number: 1,
@@ -101,6 +103,8 @@ mod tests {
                     color: [12, 11],
                     is_spectator: true,
                     is_bot: false,
+                    auth_username: None,
+                    auth_cc: None,
                 },
                 Client {
                     number: 2,
@@ -109,6 +113,8 @@ mod tests {
                     color: [2, 2],
                     is_spectator: false,
                     is_bot: false,
+                    auth_username: None,
+                    auth_cc: None,
                 },
             ]
         );
@@ -174,6 +180,8 @@ mod tests {
                     color: [4, 4],
                     is_spectator: false,
                     is_bot: false,
+                    auth_username: None,
+                    auth_cc: None,
                 },
                 Client {
                     number: 2,
@@ -182,6 +190,8 @@ mod tests {
                     color: [2, 2],
                     is_spectator: false,
                     is_bot: false,
+                    auth_username: None,
+                    auth_cc: None,
                 },
             ]
         );
@@ -202,6 +212,8 @@ mod tests {
                 color: [12, 11],
                 is_spectator: true,
                 is_bot: false,
+                auth_username: None,
+                auth_cc: None,
             },]
         );
 

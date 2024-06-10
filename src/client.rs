@@ -8,6 +8,8 @@ pub struct Client {
     pub color: [u8; 2],
     pub is_spectator: bool,
     pub is_bot: bool,
+    pub auth_username: Option<String>,
+    pub auth_cc: Option<String>,
 }
 
 impl From<&Clientinfo> for Client {
@@ -22,6 +24,8 @@ impl From<&Clientinfo> for Client {
             ],
             is_spectator: value.spectator.is_some_and(|v| v != 0),
             is_bot: value.bot.is_some_and(|v| v != 0),
+            auth_username: value.auth.clone(),
+            auth_cc: value.flag.clone(),
         }
     }
 }
