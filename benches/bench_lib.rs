@@ -13,8 +13,8 @@ fn lib_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("lib");
     group.throughput(Throughput::Bytes(data.len() as u64));
 
+    group.bench_function("aborted", |b| b.iter(|| mvdparser::is_aborted(&data)));
     group.bench_function("players", |b| b.iter(|| mvdparser::all::players(&data)));
-    
     group.bench_function("players_from_parsing", |b| {
         b.iter(|| mvdparser::all::players_from_parsing(&data))
     });
