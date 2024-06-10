@@ -8,10 +8,17 @@ pub struct Player {
     pub frags: i32,
     pub ping: u32,
     pub is_bot: bool,
+    pub auth_username: Option<String>,
+    pub auth_cc: Option<String>,
 }
 
 impl From<&ktxstats::v3::Player> for Player {
     fn from(player: &ktxstats::v3::Player) -> Self {
+        let auth_username = match !player.login.is_empty() {
+            true => Some(player.login.clone()),
+            false => None,
+        };
+
         Self {
             name: player.name.clone(),
             team: player.team.clone(),
@@ -19,6 +26,8 @@ impl From<&ktxstats::v3::Player> for Player {
             frags: player.stats.frags,
             ping: player.ping as u32,
             is_bot: player.ping == 10,
+            auth_username,
+            auth_cc: None,
         }
     }
 }
@@ -57,6 +66,8 @@ mod tests {
                 frags: 54,
                 ping: 25,
                 is_bot: false,
+                auth_username: None,
+                auth_cc: None,
             }
         );
     }

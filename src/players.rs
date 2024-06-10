@@ -37,6 +37,8 @@ pub fn players_from_parsing(data: &[u8]) -> Result<Vec<Player>> {
             color: c.color,
             frags: *frags.get(&c.name).unwrap_or(&0),
             ping: *pings.get(&c.number).unwrap_or(&0),
+            auth_username: c.auth_username.clone(),
+            auth_cc: c.auth_cc.clone(),
             is_bot: c.is_bot,
         };
         pmap.insert(c.number, player);
@@ -120,6 +122,8 @@ mod tests {
                         color: [4, 4],
                         frags: 13,
                         ping: 10,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: true,
                     },
                     Player {
@@ -128,6 +132,8 @@ mod tests {
                         color: [4, 4],
                         frags: 7,
                         ping: 10,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: true,
                     },
                     Player {
@@ -136,6 +142,8 @@ mod tests {
                         color: [0, 4],
                         frags: 1,
                         ping: 51,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -144,6 +152,8 @@ mod tests {
                         color: [0, 4],
                         frags: -5,
                         ping: 10,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: true,
                     },
                 ]
@@ -160,6 +170,8 @@ mod tests {
                         color: [2, 2],
                         frags: 20,
                         ping: 29,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -168,6 +180,8 @@ mod tests {
                         color: [4, 4],
                         frags: 19,
                         ping: 25,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                 ]
@@ -184,6 +198,8 @@ mod tests {
                         color: [4, 4],
                         frags: 31,
                         ping: 26,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -192,6 +208,8 @@ mod tests {
                         color: [4, 4],
                         frags: 25,
                         ping: 25,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                 ]
@@ -208,6 +226,8 @@ mod tests {
                         color: [11, 10],
                         frags: 89,
                         ping: 12,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -216,6 +236,8 @@ mod tests {
                         color: [11, 10],
                         frags: 74,
                         ping: 12,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -224,6 +246,8 @@ mod tests {
                         color: [11, 10],
                         frags: 71,
                         ping: 12,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -232,6 +256,8 @@ mod tests {
                         color: [11, 10],
                         frags: 60,
                         ping: 12,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -240,6 +266,8 @@ mod tests {
                         color: [0, 1],
                         frags: 33,
                         ping: 26,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -248,6 +276,8 @@ mod tests {
                         color: [0, 1],
                         frags: 32,
                         ping: 26,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -256,6 +286,8 @@ mod tests {
                         color: [0, 1],
                         frags: 27,
                         ping: 26,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -264,6 +296,8 @@ mod tests {
                         color: [0, 1],
                         frags: 26,
                         ping: 28,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                 ]
@@ -280,6 +314,8 @@ mod tests {
                         color: [10, 11],
                         frags: 8,
                         ping: 10,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: true,
                     },
                     Player {
@@ -288,6 +324,8 @@ mod tests {
                         color: [0, 6],
                         frags: 6,
                         ping: 10,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: true,
                     },
                     Player {
@@ -296,6 +334,8 @@ mod tests {
                         color: [3, 4],
                         frags: 6,
                         ping: 10,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: true,
                     },
                     Player {
@@ -304,6 +344,8 @@ mod tests {
                         color: [3, 13],
                         frags: 5,
                         ping: 10,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: true,
                     },
                     Player {
@@ -312,6 +354,8 @@ mod tests {
                         color: [0, 0],
                         frags: 4,
                         ping: 12,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                 ]
@@ -334,6 +378,8 @@ mod tests {
                         color: [2, 2],
                         frags: 20,
                         ping: 25,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -342,6 +388,8 @@ mod tests {
                         color: [4, 4],
                         frags: 19,
                         ping: 26,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                 ]
@@ -358,6 +406,8 @@ mod tests {
                         color: [4, 4],
                         frags: 164,
                         ping: 33,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -366,6 +416,8 @@ mod tests {
                         color: [4, 4],
                         frags: 140,
                         ping: 12,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -374,6 +426,8 @@ mod tests {
                         color: [4, 4],
                         frags: 128,
                         ping: 42,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -382,6 +436,8 @@ mod tests {
                         color: [4, 4],
                         frags: 120,
                         ping: 77,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -390,6 +446,8 @@ mod tests {
                         color: [4, 4],
                         frags: 118,
                         ping: 40,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -398,6 +456,8 @@ mod tests {
                         color: [13, 13],
                         frags: 29,
                         ping: 16,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -406,6 +466,8 @@ mod tests {
                         color: [13, 13],
                         frags: 23,
                         ping: 12,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -414,6 +476,8 @@ mod tests {
                         color: [13, 13],
                         frags: 19,
                         ping: 12,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -422,6 +486,8 @@ mod tests {
                         color: [13, 13],
                         frags: 15,
                         ping: 12,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                     Player {
@@ -430,6 +496,8 @@ mod tests {
                         color: [13, 13],
                         frags: 10,
                         ping: 46,
+                        auth_username: None,
+                        auth_cc: None,
                         is_bot: false,
                     },
                 ]

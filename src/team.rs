@@ -97,6 +97,8 @@ mod tests {
                 color: [4, 3],
                 frags: 54,
                 ping: 25,
+                auth_username: None,
+                auth_cc: None,
                 is_bot: false,
             };
             let red_beta = Player {
@@ -105,6 +107,8 @@ mod tests {
                 color: [4, 3],
                 frags: 16,
                 ping: 12,
+                auth_username: None,
+                auth_cc: None,
                 is_bot: false,
             };
             let blue_gamma = Player {
@@ -113,6 +117,8 @@ mod tests {
                 color: [11, 10],
                 frags: 29,
                 ping: 52,
+                auth_username: None,
+                auth_cc: None,
                 is_bot: false,
             };
             let players = vec![red_alpha.clone(), red_beta.clone(), blue_gamma.clone()];

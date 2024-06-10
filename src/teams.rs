@@ -45,6 +45,8 @@ mod tests {
                                 frags: 33,
                                 ping: 26,
                                 is_bot: false,
+                                auth_username: None,
+                                auth_cc: None,
                             },
                             Player {
                                 name: "tco.........áøå".to_string(),
@@ -53,6 +55,8 @@ mod tests {
                                 frags: 32,
                                 ping: 26,
                                 is_bot: false,
+                                auth_username: None,
+                                auth_cc: None,
                             },
                             Player {
                                 name: "bar.........áøå".to_string(),
@@ -61,6 +65,8 @@ mod tests {
                                 frags: 27,
                                 ping: 25,
                                 is_bot: false,
+                                auth_username: None,
+                                auth_cc: None,
                             },
                             Player {
                                 name: "trl.........áøå".to_string(),
@@ -69,6 +75,8 @@ mod tests {
                                 frags: 26,
                                 ping: 28,
                                 is_bot: false,
+                                auth_username: None,
+                                auth_cc: None,
                             },
                         ],
                     },
@@ -85,6 +93,8 @@ mod tests {
                                 frags: 89,
                                 ping: 12,
                                 is_bot: false,
+                                auth_username: None,
+                                auth_cc: None,
                             },
                             Player {
                                 name: "djevulsk".to_string(),
@@ -93,6 +103,8 @@ mod tests {
                                 frags: 74,
                                 ping: 12,
                                 is_bot: false,
+                                auth_username: None,
+                                auth_cc: None,
                             },
                             Player {
                                 name: "conan".to_string(),
@@ -101,6 +113,8 @@ mod tests {
                                 frags: 71,
                                 ping: 12,
                                 is_bot: false,
+                                auth_username: None,
+                                auth_cc: None,
                             },
                             Player {
                                 name: "elguapo".to_string(),
@@ -109,6 +123,8 @@ mod tests {
                                 frags: 60,
                                 ping: 13,
                                 is_bot: false,
+                                auth_username: None,
+                                auth_cc: None,
                             },
                         ],
                     },
