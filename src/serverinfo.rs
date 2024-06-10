@@ -8,7 +8,7 @@ pub fn serverinfo(data: &[u8]) -> Result<Serverinfo> {
 }
 
 pub fn serverinfo_string(data: &[u8]) -> Result<String> {
-    const MAX_OFFSET: usize = 128;
+    const MAX_OFFSET: usize = 256;
     const MAX_SIZE: usize = 1024;
     let Some((from, to)) = bytesextra::offsets_between(
         &data[..MAX_OFFSET + MAX_SIZE],
