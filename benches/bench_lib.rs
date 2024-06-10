@@ -14,10 +14,7 @@ fn lib_benchmark(c: &mut Criterion) {
     group.throughput(Throughput::Bytes(data.len() as u64));
 
     group.bench_function("players", |b| b.iter(|| mvdparser::all::players(&data)));
-
-    group.bench_function("players_from_ktxstats", |b| {
-        b.iter(|| mvdparser::all::players_from_ktxstats(&data))
-    });
+    
     group.bench_function("players_from_parsing", |b| {
         b.iter(|| mvdparser::all::players_from_parsing(&data))
     });
