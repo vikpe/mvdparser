@@ -17,6 +17,14 @@ pub fn clients(data: &[u8]) -> Result<Vec<Client>> {
     Ok(clients)
 }
 
+pub fn has_bot_players(data: &[u8]) -> Result<bool> {
+    Ok(player_clients(data)?.iter().any(|c| c.is_bot))
+}
+
+pub fn has_human_players(data: &[u8]) -> Result<bool> {
+    Ok(player_clients(data)?.iter().any(|c| !c.is_bot))
+}
+
 pub fn player_clients(data: &[u8]) -> Result<Vec<Client>> {
     let players = clients(data)?
         .iter()
@@ -104,6 +112,50 @@ mod tests {
                 },
             ]
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_has_bot_players() -> Result<()> {
+        {
+            let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
+            assert!(has_bot_players(&demo_data)?);
+        }
+        {
+            let demo_data = read("tests/files/2on2_sf_vs_red[frobodm2]220104-0915.mvd")?;
+            assert!(has_bot_players(&demo_data)?);
+        }
+        {
+            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
+            assert!(!has_bot_players(&demo_data)?);
+        }
+        {
+            let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
+            assert!(!has_bot_players(&demo_data)?);
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_has_human_players() -> Result<()> {
+        {
+            let demo_data = read("tests/files/ffa_5[dm4]20240501-1229.mvd")?;
+            assert!(has_human_players(&demo_data)?);
+        }
+        {
+            let demo_data = read("tests/files/2on2_sf_vs_red[frobodm2]220104-0915.mvd")?;
+            assert!(has_human_players(&demo_data)?);
+        }
+        {
+            let demo_data = read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?;
+            assert!(has_human_players(&demo_data)?);
+        }
+        {
+            let demo_data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
+            assert!(has_human_players(&demo_data)?);
+        }
 
         Ok(())
     }
