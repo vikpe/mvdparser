@@ -6,6 +6,7 @@ pub use player::Player;
 pub use server::Server;
 pub use team::Team;
 
+pub use crate::aborted::is_aborted;
 pub use crate::clientinfo::clientinfo;
 pub use crate::clients::{
     player_clients, player_names, spectator_clients, spectator_names, team_names,
@@ -22,6 +23,7 @@ pub use crate::teams::teams;
 pub use crate::timestamp::timestamp;
 
 pub mod all {
+    pub use crate::aborted::*;
     pub use crate::client::*;
     pub use crate::clientinfo::*;
     pub use crate::clients::*;
@@ -41,6 +43,7 @@ pub mod all {
     pub use crate::timestamp::*;
 }
 
+mod aborted;
 mod bytesextra;
 mod client;
 mod clientinfo;
