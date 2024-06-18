@@ -4,9 +4,13 @@ use anyhow::{anyhow as e, Result};
 use bstr::ByteSlice;
 
 use crate::qw::frame;
-use crate::{bytesextra, ktxstats_string, matchdate};
+use crate::{bytesextra, ktxstats_string, matchdate, serverinfo};
 
 pub fn countdown_duration(data: &[u8]) -> Result<Duration> {
+    if serverinfo(data).is_ok_and(|s| s.mode == Some("hoonymode".to_string())) {
+        return Ok(Duration::ZERO);
+    }
+
     let Some(offset) = data.find(matchdate::MATCHDATE_NEEDLE) else {
         return Err(e!("Countdown not found"));
     };
@@ -23,6 +27,10 @@ pub fn demo_duration(data: &[u8]) -> Result<Duration> {
 }
 
 pub fn match_duration(data: &[u8]) -> Result<Duration> {
+    if serverinfo(data).is_ok_and(|s| s.mode == Some("hoonymode".to_string())) {
+        return match_duration_from_seeking(data);
+    }
+
     match_duration_from_ktxstats(data).or_else(|_| match_duration_from_seeking(data))
 }
 
@@ -71,6 +79,12 @@ mod tests {
     #[test]
     fn test_countdown_duration() -> Result<()> {
         assert_eq!(
+            countdown_duration(&read(
+                "tests/files/1on1_milton_vs_mushi[tron]20240616-1719.mvd"
+            )?)?,
+            Duration::ZERO,
+        );
+        assert_eq!(
             countdown_duration(&read("tests/files/ffa_5[dm4]20240501-1229.mvd")?)?,
             Duration::from_secs_f32(10.116),
         );
@@ -105,6 +119,12 @@ mod tests {
 
     #[test]
     fn test_demo_duration() -> Result<()> {
+        assert_eq!(
+            demo_duration(&read(
+                "tests/files/1on1_milton_vs_mushi[tron]20240616-1719.mvd"
+            )?)?,
+            Duration::from_secs_f32(174.609),
+        );
         assert_eq!(
             demo_duration(&read("tests/files/ffa_5[dm4]20240501-1229.mvd")?)?,
             Duration::from_secs_f32(71.503),
