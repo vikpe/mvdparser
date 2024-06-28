@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
 
+const BOT_PING: i32 = 10;
+
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Player {
     pub name: String,
@@ -25,7 +27,7 @@ impl From<&ktxstats::v3::Player> for Player {
             color: [player.top_color as u8, player.bottom_color as u8],
             frags: player.stats.frags,
             ping: player.ping as u32,
-            is_bot: player.ping == 10,
+            is_bot: player.bot.is_some() || player.ping == BOT_PING,
             auth_username,
             auth_cc: None,
         }
