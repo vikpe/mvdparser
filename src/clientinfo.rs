@@ -17,7 +17,7 @@ pub fn clientinfo_strings(data: &[u8]) -> Result<Vec<String>> {
         return Err(e!("Unable to find clientinfo strings"));
     };
     const MAX_PLAYERS: usize = 24;
-    const MAX_LOOKAHEAD: usize = 256;
+    const MAX_LOOKAHEAD: usize = 512;
     let max_offset: usize = offset + MAX_PLAYERS * MAX_LOOKAHEAD;
     const MIN_LEN: usize = r#"\name\ "#.len();
     const MAX_LEN: usize = 256;
