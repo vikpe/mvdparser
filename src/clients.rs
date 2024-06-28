@@ -1,4 +1,5 @@
 use anyhow::Result;
+use bstr::ByteSlice;
 use quake_text::unicode;
 
 use crate::client::Client;
@@ -18,7 +19,11 @@ pub fn clients(data: &[u8]) -> Result<Vec<Client>> {
 }
 
 pub fn has_bot_players(data: &[u8]) -> Result<bool> {
-    Ok(player_clients(data)?.iter().any(|c| c.is_bot))
+    if player_clients(data)?.iter().any(|c| c.is_bot) {
+        return Ok(true);
+    }
+
+    Ok(data.rfind(br#""bot": {"#).is_some())
 }
 
 pub fn has_human_players(data: &[u8]) -> Result<bool> {
