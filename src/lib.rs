@@ -1,24 +1,21 @@
-pub use quake_clientinfo::Clientinfo;
-pub use quake_serverinfo::Settings;
-
 pub use client::Client;
 pub use player::Player;
 pub use server::Server;
 pub use team::Team;
 
 pub use crate::aborted::is_aborted;
-pub use crate::clientinfo::clientinfo;
+pub use crate::clientinfo::{clientinfo, Clientinfo};
 pub use crate::clients::{
     player_clients, player_names, spectator_clients, spectator_names, team_names,
 };
 pub use crate::duration::{countdown_duration, demo_duration, match_duration};
 pub use crate::filename::filename;
 pub use crate::frags::frags_per_player_name;
-pub use crate::ktxstats::{ktxstats_string, ktxstats_v3};
+pub use crate::ktxstats::{ktxstats_string, ktxstats_v3, KtxstatsV3};
 pub use crate::players::players;
 pub use crate::prints::prints;
 pub use crate::server::server;
-pub use crate::serverinfo::{serverinfo, serverinfo_string};
+pub use crate::serverinfo::{serverinfo, serverinfo_string, Settings};
 pub use crate::teams::teams;
 pub use crate::timestamp::timestamp;
 pub use crate::validate::is_valid;

@@ -1,5 +1,5 @@
 use anyhow::{anyhow as e, Result};
-use quake_serverinfo::Settings;
+pub use quake_serverinfo::Settings;
 
 use crate::bytesextra;
 

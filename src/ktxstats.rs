@@ -2,7 +2,7 @@ use std::str::from_utf8;
 
 use anyhow::{anyhow as e, Result};
 use bstr::ByteSlice;
-use ktxstats::v3::KtxstatsV3;
+pub use ktxstats::v3::KtxstatsV3;
 
 use crate::qw::prot::HiddenMessage;
 use crate::qw::{block, frame};

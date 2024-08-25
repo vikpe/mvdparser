@@ -1,6 +1,6 @@
 use anyhow::{anyhow as e, Result};
 use bstr::ByteSlice;
-use quake_clientinfo::Clientinfo;
+pub use quake_clientinfo::Clientinfo;
 
 pub fn clientinfo(data: &[u8]) -> Result<Vec<Clientinfo>> {
     let info: Vec<Clientinfo> = clientinfo_strings(data)?
