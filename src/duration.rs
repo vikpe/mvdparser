@@ -42,7 +42,7 @@ pub fn match_duration(data: &[u8]) -> Result<Duration> {
 
 pub fn match_duration_from_seeking(data: &[u8]) -> Result<Duration> {
     let end = demo_duration(data)?;
-    let begin = countdown_duration(data)?;
+    let begin = countdown_duration(data).unwrap_or(Duration::ZERO);
     Ok(end - begin)
 }
 
