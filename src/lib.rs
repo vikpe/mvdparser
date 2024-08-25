@@ -1,5 +1,5 @@
 pub use quake_clientinfo::Clientinfo;
-pub use quake_serverinfo::Serverinfo;
+pub use quake_serverinfo::Settings;
 
 pub use client::Client;
 pub use player::Player;

@@ -1,10 +1,10 @@
 use anyhow::{anyhow as e, Result};
-use quake_serverinfo::Serverinfo;
+use quake_serverinfo::Settings;
 
 use crate::bytesextra;
 
-pub fn serverinfo(data: &[u8]) -> Result<Serverinfo> {
-    serverinfo_string(data).map(|str| Serverinfo::from(str.as_str()))
+pub fn serverinfo(data: &[u8]) -> Result<Settings> {
+    serverinfo_string(data).map(|str| Settings::from(str.as_str()))
 }
 
 pub fn serverinfo_string(data: &[u8]) -> Result<String> {
@@ -30,10 +30,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_serverinfo() -> Result<()> {
+    fn test_server_settings() -> Result<()> {
         let data = read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?;
 
-        let expected = Serverinfo {
+        let expected = Settings {
             admin: Some("suom1 <suom1@irc.ax>".to_string()),
             deathmatch: Some(3),
             epoch: None,
@@ -68,7 +68,7 @@ mod tests {
     }
 
     #[test]
-    fn test_serverinfo_string() -> Result<()> {
+    fn test_server_settings_string() -> Result<()> {
         assert_eq!(
             serverinfo_string(&read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?)?,
             r#"\maxfps\77\pm_ktjump\1\*version\MVDSV 1.01-dev\*z_ext\511\maxspectators\12\*gamedir\qw\sv_antilag\2\*admin\ERRH @ https://discord.quake.world\ktxver\1.44-dev\mode\1on1\maxclients\2\timelimit\3\deathmatch\4\hostname\de.quake.world:27502 [QW-Group]\fpd\142\*qvm\so\*progs\so\map\povdmm4\status\Countdown\serverdemo\duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd\epoch\1713782300"#.to_string()
