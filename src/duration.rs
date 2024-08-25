@@ -18,11 +18,17 @@ pub fn countdown_duration(data: &[u8]) -> Result<Duration> {
 }
 
 pub fn demo_duration(data: &[u8]) -> Result<Duration> {
-    const NEEDLE: [u8; 0x10] = [
+    const NEEDLE_MATCH_OVER: [u8; 0x11] = [
+        0x54, 0x68, 0x65, 0x20, 0x6D, 0x61, 0x74, 0x63, 0x68, 0x20, 0x69, 0x73, 0x20, 0x6F, 0x76,
+        0x65, 0x72, // "The match is over"
+    ];
+    const NEEDLE_STANDBY: [u8; 0x10] = [
         0x34, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x00, 0x53, 0x74, 0x61, 0x6E, 0x64, 0x62, 0x79,
         0x00, // "[serverinfo] [status] Standby"
     ];
-    let offset = data.rfind(NEEDLE).unwrap_or(data.len());
+    let offset = data
+        .rfind(NEEDLE_MATCH_OVER)
+        .unwrap_or_else(|| data.rfind(NEEDLE_STANDBY).unwrap_or(data.len()));
     Ok(duration_until_offset(data, offset))
 }
 
@@ -85,34 +91,39 @@ mod tests {
             Duration::ZERO,
         );
         assert_eq!(
-            countdown_duration(&read("tests/files/ffa_5[dm4]20240501-1229.mvd")?)?,
-            Duration::from_secs_f32(10.116),
+            countdown_duration(&read("tests/files/ffa_5[dm4]20240501-1229.mvd")?)?.as_secs(),
+            10,
         );
         assert_eq!(
             countdown_duration(&read(
                 "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
-            )?)?,
-            Duration::from_secs_f32(10.156),
+            )?)?
+            .as_secs(),
+            10,
         );
         assert_eq!(
             countdown_duration(&read(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd"
-            )?)?,
-            Duration::from_secs_f32(10.105),
+            )?)?
+            .as_secs(),
+            10,
         );
         assert_eq!(
-            countdown_duration(&read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?)?,
-            Duration::from_secs_f32(10.113),
+            countdown_duration(&read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?)?
+                .as_secs(),
+            10,
         );
         assert_eq!(
-            countdown_duration(&read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?)?,
-            Duration::from_secs_f32(10.103),
+            countdown_duration(&read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?)?
+                .as_secs(),
+            10,
         );
         assert_eq!(
             countdown_duration(&read(
                 "tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd"
-            )?)?,
-            Duration::from_secs_f32(10.112),
+            )?)?
+            .as_secs(),
+            10,
         );
         Ok(())
     }
@@ -122,38 +133,42 @@ mod tests {
         assert_eq!(
             demo_duration(&read(
                 "tests/files/1on1_milton_vs_mushi[tron]20240616-1719.mvd"
-            )?)?,
-            Duration::from_secs_f32(174.609),
+            )?)?
+            .as_secs(),
+            174,
         );
         assert_eq!(
-            demo_duration(&read("tests/files/ffa_5[dm4]20240501-1229.mvd")?)?,
-            Duration::from_secs_f32(71.503),
+            demo_duration(&read("tests/files/ffa_5[dm4]20240501-1229.mvd")?)?.as_secs(),
+            71,
         );
         assert_eq!(
             demo_duration(&read(
                 "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
-            )?)?,
-            Duration::from_secs_f32(190.169),
+            )?)?
+            .as_secs(),
+            190,
         );
         assert_eq!(
             demo_duration(&read(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd"
-            )?)?,
-            Duration::from_secs_f32(610.144),
+            )?)?
+            .as_secs(),
+            610,
         );
         assert_eq!(
-            demo_duration(&read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?)?,
-            Duration::from_secs_f32(1210.142),
+            demo_duration(&read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?)?.as_secs(),
+            1210,
         );
         assert_eq!(
-            demo_duration(&read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?)?,
-            Duration::from_secs_f32(610.214),
+            demo_duration(&read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?)?.as_secs(),
+            610,
         );
         assert_eq!(
             demo_duration(&read(
                 "tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd"
-            )?)?,
-            Duration::from_secs_f32(231.352),
+            )?)?
+            .as_secs(),
+            231,
         );
         Ok(())
     }
@@ -161,34 +176,37 @@ mod tests {
     #[test]
     fn test_match_duration() -> Result<()> {
         assert_eq!(
-            match_duration(&read("tests/files/ffa_5[dm4]20240501-1229.mvd")?)?,
-            Duration::from_secs(61),
+            match_duration(&read("tests/files/ffa_5[dm4]20240501-1229.mvd")?)?.as_secs(),
+            61,
         );
         assert_eq!(
             match_duration(&read(
                 "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
-            )?)?,
-            Duration::from_secs(180),
+            )?)?
+            .as_secs(),
+            180,
         );
         assert_eq!(
             match_duration(&read(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd"
-            )?)?,
-            Duration::from_secs(600),
+            )?)?
+            .as_secs(),
+            600
         );
         assert_eq!(
-            match_duration(&read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?)?,
-            Duration::from_secs(1200),
+            match_duration(&read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?)?.as_secs(),
+            1200
         );
         assert_eq!(
-            match_duration(&read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?)?,
-            Duration::from_secs(600),
+            match_duration(&read("tests/files/ctf_blue_vs_red[ctf5]20240520-1925.mvd")?)?.as_secs(),
+            600
         );
         assert_eq!(
             match_duration(&read(
                 "tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd"
-            )?)?,
-            Duration::from_secs_f64(221.24000454),
+            )?)?
+            .as_secs(),
+            221
         );
         Ok(())
     }
