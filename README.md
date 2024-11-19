@@ -12,6 +12,14 @@ mvdparser::match_duration(&data)     // Option<Duration>
 mvdparser::demo_duration(&data)      // Option<Duration>
 ```
 
+### validation
+
+```rust
+mvdparser::is_valid(&data) // bool
+mvdparser::is_aborted(&data) // bool
+mvdparser::is_paused(&data) // bool
+```
+
 ### timestamp
 
 Gets timestamp from `epoch` in serverinfo (preferred) _or_ from `matchdate` print.
