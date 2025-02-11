@@ -35,7 +35,7 @@ where
         while let Ok(msg) = Message::read(r) {
             match msg {
                 Message::UpdateUserinfo(update) => {
-                    if !update.userinfo.is_empty() {
+                    if update.userinfo.starts_with(b"\\") {
                         result.push(bytestr::to_unicode(&update.userinfo));
                     }
                 }

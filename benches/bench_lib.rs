@@ -38,6 +38,8 @@ fn lib_benchmark(c: &mut Criterion) {
     });
     group.bench_function("ktxstats_v3", |b| b.iter(|| mvdparser::ktxstats_v3(file)));
 
+    group.bench_function("validate", |b| b.iter(|| mvdparser::all::is_paused(file)));
+
     /*
     group.bench_function("is_valid", |b| b.iter(|| mvdparser::is_valid(&data)));
     group.bench_function("aborted", |b| b.iter(|| mvdparser::is_aborted(&data)));

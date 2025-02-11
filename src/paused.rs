@@ -1,35 +1,30 @@
-use crate::validate;
+use crate::pkg::ioextra::last_n;
+use crate::validate::has_end_of_demo_marker;
 use anyhow::Result;
+use binrw::BinRead;
 use bstr::ByteSlice;
 use std::io::{Read, Seek};
+
+// "Server is paused"
+const NEEDLE_1: [u8; 16] = [
+    83, 101, 114, 118, 101, 114, 32, 105, 115, 32, 112, 97, 117, 115, 101, 100,
+];
+
+// "paused the game"
+const NEEDLE_2: [u8; 15] = [
+    112, 97, 117, 115, 101, 100, 32, 116, 104, 101, 32, 103, 97, 109, 101,
+];
 
 pub fn is_paused<R>(r: &mut R) -> Result<bool>
 where
     R: Read + Seek,
 {
-    let data = r.bytes().collect::<Result<Vec<u8>, _>>()?;
-
-    // Check if the demo has ended
-    if validate::has_end_of_demo_marker(data.as_slice()) {
+    if has_end_of_demo_marker(r) {
         return Ok(false);
     }
 
-    // "Server is paused"
-    const IS_PAUSED_NEEDLE: [u8; 0x10] = [
-        0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x20, 0x69, 0x73, 0x20, 0x70, 0x61, 0x75, 0x73, 0x65,
-        0x64,
-    ];
-
-    if data.rfind(IS_PAUSED_NEEDLE).is_some() {
-        return Ok(true);
-    }
-
-    // "paused the game"
-    const PAUSED_THE_GAME_NEEDLE: [u8; 0x0F] = [
-        0x70, 0x61, 0x75, 0x73, 0x65, 0x64, 0x20, 0x74, 0x68, 0x65, 0x20, 0x67, 0x61, 0x6D, 0x65,
-    ];
-
-    Ok(data.rfind(PAUSED_THE_GAME_NEEDLE).is_some())
+    let last_bytes = last_n(r, 2048)?;
+    Ok(last_bytes.rfind(NEEDLE_1).is_some() || last_bytes.rfind(NEEDLE_2).is_some())
 }
 
 #[cfg(test)]
