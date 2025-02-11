@@ -1,15 +1,20 @@
+use crate::{matchdate, serverinfo};
 use anyhow::{anyhow as e, Result};
 use chrono::{DateTime, LocalResult, TimeZone, Utc};
+use std::io::{Read, Seek};
 
-use crate::matchdate::matchdate;
-use crate::serverinfo;
-
-pub fn timestamp(data: &[u8]) -> Result<DateTime<Utc>> {
-    timestamp_from_epoch(data).or_else(|_| matchdate(data))
+pub fn timestamp<R>(r: &mut R) -> Result<DateTime<Utc>>
+where
+    R: Read + Seek,
+{
+    matchdate(r)
 }
 
-pub fn timestamp_from_epoch(data: &[u8]) -> Result<DateTime<Utc>> {
-    let Some(epoch) = serverinfo(data)?.epoch else {
+fn timestamp_from_epoch<R>(r: &mut R) -> Result<DateTime<Utc>>
+where
+    R: Read + Seek,
+{
+    let Some(epoch) = serverinfo(r)?.epoch else {
         return Err(e!("Epoch not found in serverinfo"));
     };
 
@@ -22,7 +27,7 @@ pub fn timestamp_from_epoch(data: &[u8]) -> Result<DateTime<Utc>> {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::read;
+    use std::fs::File;
 
     use anyhow::Result;
     use chrono::DateTime;
@@ -37,14 +42,14 @@ mod tests {
     #[test]
     fn test_timestamp() -> Result<()> {
         assert_eq!(
-            timestamp(&read(
+            timestamp(&mut File::open(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd"
             )?)?,
             to_timestamp("2024-04-26T14:59:29Z")
         );
 
         assert_eq!(
-            timestamp(&read(
+            timestamp(&mut File::open(
                 "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
             )?)?,
             to_timestamp("2024-04-22T10:38:20Z")
@@ -56,7 +61,7 @@ mod tests {
     #[test]
     fn test_timestamp_from_epoch() -> Result<()> {
         assert_eq!(
-            timestamp_from_epoch(&read(
+            timestamp_from_epoch(&mut File::open(
                 "tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd"
             )?)
             .unwrap_err()
@@ -65,7 +70,7 @@ mod tests {
         );
 
         assert_eq!(
-            timestamp_from_epoch(&read(
+            timestamp_from_epoch(&mut File::open(
                 "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
             )?)?,
             to_timestamp("2024-04-22T10:38:20Z")

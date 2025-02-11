@@ -13,7 +13,32 @@ fn lib_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("lib");
     group.throughput(Throughput::Bytes(data.len() as u64));
 
-    group.bench_function("is_paused", |b| b.iter(|| mvdparser::is_paused(&data)));
+    let file = &mut fs::File::open("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")
+        .expect("unable to open demo 1");
+
+    group.bench_function("prints", |b| b.iter(|| mvdparser::prints(file)));
+
+    group.bench_function("serverinfo", |b| b.iter(|| mvdparser::serverinfo(file)));
+
+    let file2 = &mut fs::File::open("tests/files/4on4_-s-_vs_pol[dm2]20241118-2135.mvd")
+        .expect("unable to open demo 2");
+
+    group.bench_function("is_paused (not paused)", |b| {
+        b.iter(|| mvdparser::is_paused(file));
+    });
+    group.bench_function("is_paused (paused)", |b| {
+        b.iter(|| mvdparser::is_paused(file2));
+    });
+    group.bench_function("clientinfo", |b| b.iter(|| mvdparser::clientinfo(file)));
+
+    group.bench_function("matchdate", |b| b.iter(|| mvdparser::matchdate(file)));
+
+    group.bench_function("ktxstats_string", |b| {
+        b.iter(|| mvdparser::ktxstats_string(file))
+    });
+    group.bench_function("ktxstats_v3", |b| b.iter(|| mvdparser::ktxstats_v3(file)));
+
+    /*
     group.bench_function("is_valid", |b| b.iter(|| mvdparser::is_valid(&data)));
     group.bench_function("aborted", |b| b.iter(|| mvdparser::is_aborted(&data)));
     group.bench_function("players", |b| b.iter(|| mvdparser::all::players(&data)));
@@ -29,34 +54,31 @@ fn lib_benchmark(c: &mut Criterion) {
     group.bench_function("frags", |b| {
         b.iter(|| mvdparser::all::frags_per_player_name(&data))
     });
-    group.bench_function("prints", |b| b.iter(|| mvdparser::all::prints(&data)));
 
-    group.bench_function("clientinfo", |b| {
-        b.iter(|| mvdparser::all::clientinfo(&data))
-    });
+
+
 
     group.bench_function("clients", |b| b.iter(|| mvdparser::all::clients(&data)));
 
-    group.bench_function("ktxstats_string", |b| {
-        b.iter(|| mvdparser::all::ktxstats_string(&data))
-    });
-    group.bench_function("ktxstats_v3", |b| {
-        b.iter(|| mvdparser::all::ktxstats_v3(&data))
-    });
 
-    group.bench_function("matchdate", |b| b.iter(|| mvdparser::all::matchdate(&data)));
-    group.bench_function("matchdate_string", |b| {
-        b.iter(|| mvdparser::all::matchdate_string(&data))
-    });
 
-    group.bench_function("serverinfo", |b| {
-        b.iter(|| mvdparser::all::serverinfo(&data))
-    });
+
+    */
+
+    /*
+
     group.bench_function("serverinfo_string", |b| {
-        b.iter(|| mvdparser::all::serverinfo_string(&data))
-    });
+        b.iter(|| mvdparser::all::serverinfo_string(file))
+    });*/
 
-    group.bench_function("timestamp", |b| b.iter(|| mvdparser::all::timestamp(&data)));
+    // group.bench_function("timestamp", |b| b.iter(|| mvdparser::all::timestamp(file)));
+
+    // group.bench_function("matchdate", |b| b.iter(|| mvdparser::all::matchdate(file)));
+    /*group.bench_function("matchdate_string", |b| {
+        b.iter(|| mvdparser::all::matchdate_string(file))
+    });*/
+
+    /*
 
     group.bench_function("countdown_duration", |b| {
         b.iter(|| mvdparser::all::countdown_duration(&data))
@@ -66,7 +88,7 @@ fn lib_benchmark(c: &mut Criterion) {
     });
     group.bench_function("match_duration", |b| {
         b.iter(|| mvdparser::all::match_duration(&data))
-    });
+    });*/
 
     group.finish();
 }

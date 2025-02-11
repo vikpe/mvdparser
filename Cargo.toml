@@ -20,9 +20,10 @@ include = [
 
 [dependencies]
 anyhow = "1.0.82"
+binrw = "0.14.1"
 bstr = "1.9.1"
 chrono = { version = "0.4.38", default-features = false }
-ktxstats = "0.4.0"
+ktxstats = "0.5.0"
 quake_clientinfo = "0.3.0"
 quake_serverinfo = "0.7.0"
 quake_text = "0.2.0"

@@ -1,117 +1,87 @@
-use std::io::Cursor;
-use std::ops::Range;
+use crate::qw::hidden_message::HiddenMessage;
+use binrw::BinRead;
 
-use anyhow::{anyhow as e, Result};
-
-use crate::qw::primitives::{numsize, ReadPrimitives};
-use crate::qw::prot::{Command, Target};
-
-pub const HEADER_SIZE: usize = numsize::SHORT + numsize::LONG;
-pub const MULTI_HEADER_SIZE: usize = HEADER_SIZE + numsize::LONG;
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct Info {
-    pub duration: u32,
-    pub target: Target,
+#[derive(Debug, BinRead)]
+#[br(little)]
+pub struct Frame {
+    pub duration: u8,
+    #[br(map = |x: u8| Command::from(x))]
     pub command: Command,
-    pub index: usize,
-    pub size: usize,
-    pub header_size: usize,
-    pub header_range: Range<usize>,
-    pub body_size: usize,
-    pub body_range: Range<usize>,
+    #[br(if(command == Command::Multiple, None))]
+    pub to: Option<u32>,
+    pub body_size: u32,
 }
 
-impl Info {
-    pub fn from_data_and_index(data: &[u8], index: usize) -> Result<Self> {
-        let mut cur = Cursor::new(&data[index..]);
+#[derive(Debug, BinRead)]
+#[br(little)]
+pub struct MultiFrameInfo {
+    pub body_size: u32,
+    pub hidden_message: HiddenMessage,
+}
 
-        let duration = cur.read_byte()? as u32;
+#[derive(Debug, PartialEq, BinRead)]
+#[br(repr=u8)]
+pub enum Command {
+    Cmd = 0,      // A user cmd movement message.
+    Read = 1,     // A net message.
+    Set = 2,      // Appears only once at the beginning of a demo
+    Multiple = 3, // MVD ONLY. This message is directed to several clients.
+    Single = 4,   // MVD ONLY. This message is directed to a single client.
+    Stats = 5,    // MVD ONLY. Stats update for a player.
+    All = 6,      // MVD ONLY. This message is directed to all clients.
+    Empty = 7,    //
+}
 
-        let (target, command) = {
-            let byte = cur.read_byte()?;
-            (Target::from(&byte), Command::from(&byte))
-        };
-
-        let multi_bytes = match target {
-            Target::Multiple => numsize::LONG, // skip multi target bytes [0,0,0,0]
-            _ => 0,
-        };
-        cur.set_position(cur.position() + multi_bytes as u64);
-
-        let body_size = match command {
-            Command::Read => cur.read_u32()? as usize,
-            Command::Set => 2 * numsize::LONG, // reads 2 longs (8 bytes)
-            _ => 0,                            // should not happen
-        };
-
-        let header_size = cur.position() as usize;
-        let size = header_size + body_size;
-
-        if data.len() < size {
-            return Err(e!("Frame is smaller than expected size"));
+impl From<u8> for Command {
+    fn from(value: u8) -> Self {
+        // read 3 first bytes
+        match value & 7 {
+            0 => Command::Cmd,
+            1 => Command::Read,
+            2 => Command::Set,
+            3 => Command::Multiple,
+            4 => Command::Single,
+            5 => Command::Stats,
+            6 => Command::All,
+            _ => Command::Empty,
         }
-
-        Ok(Self {
-            index,
-            duration,
-            target,
-            command,
-            size,
-            header_size,
-            header_range: index..index + header_size,
-            body_size,
-            body_range: index + header_size..index + size,
-        })
     }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct SliceInfo {
-    pub size: usize,
-    pub range_abs: Range<usize>,
-    // pub range_rel: Range<usize>,
 }
 
 #[cfg(test)]
 mod tests {
-    use std::fs::read;
-
+    use super::*;
     use anyhow::Result;
     use pretty_assertions::assert_eq;
-
-    use super::*;
+    use std::io::Cursor;
 
     #[test]
-    fn test_from_data_and_index() -> Result<()> {
-        let data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
-
+    fn test_frame_read() -> Result<()> {
         {
-            assert_eq!(
-                Info::from_data_and_index(&data[0..10], 0)
-                    .unwrap_err()
-                    .to_string(),
-                "Frame is smaller than expected size".to_string()
-            );
+            // All
+            let info = Frame::read(&mut Cursor::new([0, 6, 232, 1, 0, 0]))?;
+            assert_eq!(info.duration, 0);
+            assert_eq!(info.command, Command::All);
+            assert_eq!(info.to, None);
+            assert_eq!(info.body_size, 488);
+        }
+        {
+            // Multiple
+            let info = Frame::read(&mut Cursor::new([0, 3, 0, 0, 0, 0, 232, 1, 0, 0]))?;
+            assert_eq!(info.duration, 0);
+            assert_eq!(info.command, Command::Multiple);
+            assert_eq!(info.to, Some(0));
+            assert_eq!(info.body_size, 488);
         }
 
-        {
-            assert_eq!(
-                Info::from_data_and_index(&data, 456)?,
-                Info {
-                    index: 456,
-                    duration: 0,
-                    target: Target::All,
-                    command: Command::Read,
-                    size: 743,
-                    header_size: 6,
-                    header_range: 456..462,
-                    body_size: 737,
-                    body_range: 462..1199,
-                }
-            );
-        }
+        Ok(())
+    }
 
+    #[test]
+    fn test_command_from() -> Result<()> {
+        assert_eq!(Command::from(0), Command::Cmd);
+        assert_eq!(Command::from(7), Command::Empty);
+        assert_eq!(Command::from(8), Command::Cmd);
         Ok(())
     }
 }

@@ -1,59 +1,65 @@
+use crate::qw::frame::{Command, Frame};
+use crate::qw::message::Message;
 use anyhow::{anyhow as e, Result};
-use bstr::ByteSlice;
-pub use quake_clientinfo::Clientinfo;
+use binrw::BinRead;
+use quake_clientinfo::Clientinfo;
+use quake_text::bytestr;
+use std::io::{Read, Seek, SeekFrom};
 
-pub fn clientinfo(data: &[u8]) -> Result<Vec<Clientinfo>> {
-    let info: Vec<Clientinfo> = clientinfo_strings(data)?
+pub fn clientinfo<R>(r: &mut R) -> Result<Vec<Clientinfo>>
+where
+    R: Read + Seek,
+{
+    let info: Vec<Clientinfo> = clientinfo_strings(r)?
         .iter()
         .map(|s| Clientinfo::from(s.as_str()))
         .collect();
     Ok(info)
 }
 
-pub fn clientinfo_strings(data: &[u8]) -> Result<Vec<String>> {
-    const CMD_SPAWN: [u8; 0x0A] = [0x09, 0x63, 0x6D, 0x64, 0x20, 0x73, 0x70, 0x61, 0x77, 0x6E];
+fn clientinfo_strings<R>(r: &mut R) -> Result<Vec<String>>
+where
+    R: Read + Seek,
+{
+    let mut result = Vec::new();
 
-    let Some(mut offset) = data.find(CMD_SPAWN) else {
-        return Err(e!("Unable to find clientinfo strings"));
-    };
-    const MAX_PLAYERS: usize = 24;
-    const MAX_LOOKAHEAD: usize = 512;
-    let max_offset: usize = offset + MAX_PLAYERS * MAX_LOOKAHEAD;
-    const MIN_LEN: usize = r#"\name\ "#.len();
-    const MAX_LEN: usize = 256;
+    while let Ok(frame) = Frame::read(r) {
+        let current_pos = r.stream_position()?;
+        let next_frame_pos = current_pos + frame.body_size as u64;
 
-    let mut result: Vec<String> = vec![];
-
-    while let Some(name_offset) = data[offset..offset + MAX_LOOKAHEAD]
-        .find(br#"\name\"#)
-        .map(|o| offset + o)
-    {
-        let Some(from) = data[..name_offset].rfind_byte(0).map(|o| o + 1) else {
-            break;
-        };
-
-        let Some(to) = data[from..].find_byte(0).map(|o| from + o) else {
-            break;
-        };
-
-        if !(MIN_LEN..=MAX_LEN).contains(&(to - from)) {
-            break;
+        if frame.body_size == 0 || frame.command != Command::All {
+            r.seek(SeekFrom::Start(next_frame_pos))?;
+            continue;
         }
 
-        result.push(quake_text::bytestr::to_unicode(&data[from..to]));
-        offset = to;
+        while let Ok(msg) = Message::read(r) {
+            match msg {
+                Message::UpdateUserinfo(update) => {
+                    if !update.userinfo.is_empty() {
+                        result.push(bytestr::to_unicode(&update.userinfo));
+                    }
+                }
+                _ => {}
+            }
+        }
 
-        if offset >= max_offset {
-            break;
+        if !result.is_empty() {
+            return Ok(result);
+        }
+
+        let current_pos = r.stream_position()?;
+
+        if current_pos != next_frame_pos {
+            r.seek(SeekFrom::Start(next_frame_pos))?;
         }
     }
 
-    Ok(result)
+    Err(e!("Unable to find clientinfo strings"))
 }
 
 #[cfg(test)]
 mod tests {
-    use std::fs::read;
+    use std::fs::File;
 
     use anyhow::Result;
     use pretty_assertions::assert_eq;
@@ -63,7 +69,7 @@ mod tests {
     #[test]
     fn test_clientinfo() -> Result<()> {
         assert_eq!(
-            clientinfo(&read(
+            clientinfo(&mut File::open(
                 "tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd"
             )?)?,
             vec![
@@ -112,7 +118,7 @@ mod tests {
     #[test]
     fn test_clientinfo_strings() -> Result<()> {
         assert_eq!(
-            clientinfo_strings(&read(
+            clientinfo_strings(&mut File::open(
                 "tests/files/2on2_sf_vs_red[frobodm2]220104-0915.mvd"
             )?)?,
             vec![
@@ -125,7 +131,7 @@ mod tests {
         );
 
         assert_eq!(
-            clientinfo_strings(&read("tests/files/ffa_5[dm4]20240501-1229.mvd")?)?,
+            clientinfo_strings(&mut File::open("tests/files/ffa_5[dm4]20240501-1229.mvd")?)?,
             vec![
                 r#"\*client\libqwclient 0.1\*spectator\1\bottomcolor\11\topcolor\12\team\lqwc\name\[ServeMe]"#.to_string(),
                 r#"\*client\ezQuake 1\bottomcolor\0\topcolor\0\team\sdf\name\test"#.to_string(),
@@ -139,7 +145,7 @@ mod tests {
         );
 
         assert_eq!(
-            clientinfo_strings(&read("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?)?,
+            clientinfo_strings(&mut File::open("tests/files/duel_equ_vs_kaboom[povdmm4]20240422-1038.mvd")?)?,
             vec![
                 r#"\*client\ezQuake 1\gender\m\bottomcolor\4\topcolor\4\team\red\name\eQu"#.to_string(),
                 r#"\*client\libqwclient 0.1\*spectator\1\bottomcolor\11\topcolor\12\team\lqwc\name\[ServeMe]"#.to_string(),
@@ -148,7 +154,7 @@ mod tests {
         );
 
         assert_eq!(
-            clientinfo_strings(&read("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?)?,
+            clientinfo_strings(&mut File::open("tests/files/duel_holy_vs_dago[bravado]20240426-1659.mvd")?)?,
             vec![
                 r#"\*client\ezQuake 1\bottomcolor\4\topcolor\4\team\x\name\HoLy"#.to_string(),
                 r#"\*client\ezQuake 1\*qwfwd\1.2\bottomcolor\4\topcolor\4\team\red\name\äáçï"#.to_string(),
@@ -159,7 +165,7 @@ mod tests {
         );
 
         assert_eq!(
-            clientinfo_strings(&read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?)?,
+            clientinfo_strings(&mut File::open("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?)?,
             vec![
                 r#"\*client\ezQuake 7139\bottomcolor\1\topcolor\0\skin\oeks_tco\team\oeks\name\tco.........áøå"#.to_string(),
                 r#"\chat\1\*client\ezQuake 1\*qwfwd\1.2\bottomcolor\1\topcolor\0\skin\oeks_bar\team\oeks\name\bar.........áøå"#.to_string(),
@@ -176,7 +182,7 @@ mod tests {
         );
 
         assert_eq!(
-            clientinfo_strings(&read("tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd")?)?,
+            clientinfo_strings(&mut File::open("tests/files/wipeout_red_vs_blue[q3dm6qw]20240406-2028.mvd")?)?,
             vec![
                 r#"\*client\ezQuake 1\bottomcolor\4\topcolor\4\team\red\name\z0mbie90"#.to_string(),
                 r#"\*client\ezQuake 0\gender\m\bottomcolor\13\topcolor\13\team\blue\name\Kalle Dangerous"#.to_string(),

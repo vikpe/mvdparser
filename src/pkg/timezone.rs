@@ -1,3 +1,59 @@
+use anyhow::{anyhow as e, Result};
+
+const DATETIME_LEN: usize = "yyyy-mm-dd hh:mm:ss".len();
+
+pub fn utc_offset(value: &str) -> Option<String> {
+    if let Some(offset) = utc_offset_by_abbr(value) {
+        return Some(offset);
+    } else if let Some(offset) = utc_offset_by_offset(value) {
+        return Some(offset);
+    }
+
+    None
+}
+
+fn utc_offset_by_abbr(abbr: &str) -> Option<String> {
+    UTC_OFFSET_BY_ABBR.iter().find_map(|(abbr_, offset)| {
+        if abbr_ == &abbr {
+            Some(offset.to_string())
+        } else {
+            None
+        }
+    })
+}
+
+fn utc_offset_by_offset(offset: &str) -> Option<String> {
+    let operator = match offset.chars().next() {
+        Some(c) if ['+', '-'].contains(&c) => c,
+        _ => {
+            return None;
+        }
+    };
+
+    // support +xx and +xxxx
+    let offset = format!("{:0<4}", offset[1..].replace(':', ""));
+
+    if offset.len() != 4 {
+        return None;
+    }
+
+    // validate that number is between 0000 and 1200
+    match offset.parse::<i32>() {
+        Ok(number) if (0..=1200).contains(&number) => {
+            Some(format!("{}{}:{}", operator, &offset[0..2], &offset[2..4]))
+        }
+        _ => None,
+    }
+}
+
+pub fn replace_abbr_with_offset(timestamp: &str) -> Result<String> {
+    let tz_abbr = &timestamp[DATETIME_LEN + 1..];
+    let Some(tz_offset) = utc_offset(tz_abbr) else {
+        return Err(e!("Invalid timezone abbreviation"));
+    };
+    Ok(format!("{}{}", &timestamp[..DATETIME_LEN], tz_offset))
+}
+
 static UTC_OFFSET_BY_ABBR: &[(&str, &str)] = &[
     ("ACDT", "+10:30"),
     ("ACST", "+09:30"),
@@ -206,52 +262,9 @@ static UTC_OFFSET_BY_ABBR: &[(&str, &str)] = &[
     ("YEKT", "+05:00"),
 ];
 
-pub fn utc_offset(value: &str) -> Option<String> {
-    if let Some(offset) = utc_offset_by_abbr(value) {
-        return Some(offset);
-    } else if let Some(offset) = utc_offset_by_offset(value) {
-        return Some(offset);
-    }
-
-    None
-}
-
-fn utc_offset_by_abbr(abbr: &str) -> Option<String> {
-    UTC_OFFSET_BY_ABBR.iter().find_map(|(abbr_, offset)| {
-        if abbr_ == &abbr {
-            Some(offset.to_string())
-        } else {
-            None
-        }
-    })
-}
-
-fn utc_offset_by_offset(offset: &str) -> Option<String> {
-    let operator = match offset.chars().next() {
-        Some(c) if ['+', '-'].contains(&c) => c,
-        _ => {
-            return None;
-        }
-    };
-
-    // support +xx and +xxxx
-    let offset = format!("{:0<4}", offset[1..].replace(':', ""));
-
-    if offset.len() != 4 {
-        return None;
-    }
-
-    // validate that number is between 0000 and 1200
-    match offset.parse::<i32>() {
-        Ok(number) if (0..=1200).contains(&number) => {
-            Some(format!("{}{}:{}", operator, &offset[0..2], &offset[2..4]))
-        }
-        _ => None,
-    }
-}
-
 #[cfg(test)]
 mod tests {
+    use anyhow::Result;
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -273,5 +286,31 @@ mod tests {
         assert_eq!(utc_offset("+01:00"), Some("+01:00".to_string()));
         assert_eq!(utc_offset("+0100"), Some("+01:00".to_string()));
         assert_eq!(utc_offset("-0145"), Some("-01:45".to_string()));
+    }
+
+    #[test]
+    fn test_replace_abbr_with_offset() -> Result<()> {
+        assert_eq!(
+            replace_abbr_with_offset("2024-04-02 21:02:17 CEST")?,
+            "2024-04-02 21:02:17+02:00".to_string()
+        );
+        assert_eq!(
+            replace_abbr_with_offset("2024-04-02 21:02:17 GMT")?,
+            "2024-04-02 21:02:17+00:00".to_string()
+        );
+        assert_eq!(
+            replace_abbr_with_offset("2024-04-02 21:02:17 UTC")?,
+            "2024-04-02 21:02:17+00:00".to_string()
+        );
+        assert_eq!(
+            replace_abbr_with_offset("2024-04-02 21:02:17 -01")?,
+            "2024-04-02 21:02:17-01:00".to_string()
+        );
+        assert_eq!(
+            replace_abbr_with_offset("2024-04-02 21:02:17 +0200")?,
+            "2024-04-02 21:02:17+02:00".to_string()
+        );
+
+        Ok(())
     }
 }

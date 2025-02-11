@@ -1,64 +1,77 @@
-use std::io::Cursor;
-
-use crate::qw::frame;
-use crate::qw::message::message_type::ReadMessageType;
-use crate::qw::message::print::ReadPrint;
+use crate::qw::frame::Frame;
+use crate::qw::message::MessageType;
 use crate::qw::message::Print;
-use crate::qw::prot::MessageType;
+use anyhow::Result;
+use binrw::BinRead;
+use std::io::{Read, Seek, SeekFrom};
 
-pub fn prints(data: &[u8]) -> Vec<Print> {
-    let mut index = 0;
+pub fn prints<R>(r: &mut R) -> Result<Vec<Print>>
+where
+    R: Read + Seek,
+{
     let mut prints: Vec<Print> = Vec::new();
 
-    while let Ok(info) = frame::Info::from_data_and_index(data, index) {
-        if info.body_size > 0 {
-            let mut body = Cursor::new(&data[info.body_range]);
+    while let Ok(info) = Frame::read(r) {
+        let current_pos = r.stream_position()?;
+        let next_frame_pos = current_pos + info.body_size as u64;
 
-            while body
-                .read_message_type()
-                .is_ok_and(|t| t == MessageType::Print)
-            {
-                if let Ok(print) = body.read_print() {
-                    if !print.content.is_empty() {
-                        prints.push(print);
-                    }
-                }
+        if info.body_size == 0 {
+            r.seek(SeekFrom::Start(next_frame_pos))?;
+            continue;
+        }
+
+        while let Ok(msg_type) = MessageType::read(r) {
+            if msg_type != MessageType::Print {
+                break;
+            }
+
+            let print = Print::read(r)?;
+
+            if !print.content.0.is_empty() {
+                prints.push(print);
             }
         }
 
-        index += info.size;
+        let current_pos = r.stream_position()?;
+
+        if current_pos != next_frame_pos {
+            r.seek(SeekFrom::Start(next_frame_pos))?;
+        }
     }
 
     prints.dedup();
-    prints
+
+    Ok(prints)
 }
 
 #[cfg(test)]
 mod tests {
-    use std::fs::read;
-
-    use anyhow::Result;
-    use pretty_assertions::assert_eq;
+    use std::fs::File;
 
     use super::*;
+    use anyhow::Result;
+    use pretty_assertions::assert_eq;
+    use quake_text::bytestr::to_ascii;
 
     #[test]
     fn test_prints() -> Result<()> {
-        let demo_data = read("tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd")?;
-        let prints = prints(&demo_data);
+        let prints: Vec<Print> = prints(&mut File::open(
+            "tests/files/4on4_oeks_vs_tsq[dm2]20240426-1716.mvd",
+        )?)?;
 
-        assert_eq!(1273, prints.len());
+        assert_eq!(prints.len(), 1273);
         assert_eq!(
-            format!("{:?}", prints[0]),
-            r#"Print { id: High, content: "bar.........axe is ready [oeks]_" }"#
+            to_ascii(&prints[0].content.0),
+            "bar.........axe is ready [oeks]_".to_string()
         );
         assert_eq!(
-            format!("{:?}", prints[1]),
-            r#"Print { id: High, content: "All players ready_" }"#
+            to_ascii(&prints[1].content.0),
+            "All players ready_".to_string()
         );
+        assert_eq!(to_ascii(&prints[2].content.0), "Timer started_".to_string());
         assert_eq!(
-            format!("{:?}", prints[2]),
-            r#"Print { id: High, content: "Timer started_" }"#
+            to_ascii(&prints[1272].content.0),
+            "Statistics stored (matchtag not recognised)_".to_string()
         );
 
         Ok(())

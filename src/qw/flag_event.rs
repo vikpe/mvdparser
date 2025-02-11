@@ -1,6 +1,6 @@
 use anyhow::{anyhow as e, Result};
 
-use crate::qw::flagprint;
+use crate::qw::flag_print;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum FlagEvent {
@@ -18,13 +18,13 @@ impl TryFrom<&str> for FlagEvent {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let print_types: Vec<(usize, Vec<&str>)> = vec![
-            (1, flagprint::X_CAPTURED_FLAG.to_vec()),
-            (2, flagprint::X_DEFENDS_FLAG.to_vec()),
-            (3, flagprint::X_DEFENDS_CARRIER_AGGR.to_vec()),
-            (4, flagprint::X_DEFENDS_CARRIER.to_vec()),
-            (5, flagprint::X_GOT_FLAG.to_vec()),
-            (6, flagprint::X_RETURNED_FLAG.to_vec()),
-            (7, flagprint::X_FRAGS_CARRIER.to_vec()),
+            (1, flag_print::X_CAPTURED_FLAG.to_vec()),
+            (2, flag_print::X_DEFENDS_FLAG.to_vec()),
+            (3, flag_print::X_DEFENDS_CARRIER_AGGR.to_vec()),
+            (4, flag_print::X_DEFENDS_CARRIER.to_vec()),
+            (5, flag_print::X_GOT_FLAG.to_vec()),
+            (6, flag_print::X_RETURNED_FLAG.to_vec()),
+            (7, flag_print::X_FRAGS_CARRIER.to_vec()),
         ];
 
         for (index, needles) in print_types {
