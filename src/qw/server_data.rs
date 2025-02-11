@@ -46,7 +46,6 @@ pub fn parse_fullserverinfo<R: Read + Seek>(
     const MIN_LEN: usize = PREFIX.len() + SUFFIX.len();
 
     if full.0.len() <= (MIN_LEN) {
-        println!("fullserverinfo is too short: {:?}", full);
         return Ok(NullString::from(""));
     }
 
