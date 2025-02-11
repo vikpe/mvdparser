@@ -1,4 +1,5 @@
 use crate::qw::server_data::ServerData;
+use binrw::helpers::until_exclusive;
 use binrw::{BinRead, NullString};
 
 #[derive(Clone, Debug, Eq, PartialEq, BinRead)]
@@ -75,13 +76,13 @@ pub enum Message {
     #[br(magic(1u8))] Nop,
     #[br(magic(2u8))] Disconnect,
     #[br(magic(3u8))] UpdateStat(UpdateStat),
-    #[br(magic(4u8))] NqVersion(NqVersion),
-    #[br(magic(5u8))] NqSetview(NqSetview),
+    #[br(magic(4u8))] NqVersion(u32),
+    #[br(magic(5u8))] NqSetview(u16),
     #[br(magic(6u8))] Sound(Sound),
-    #[br(magic(7u8))] NqTime(NqTime),
+    #[br(magic(7u8))] NqTime(f32),
     #[br(magic(8u8))] Print(Print),
-    #[br(magic(9u8))] Stufftext(Stufftext),
-    #[br(magic(10u8))] SetAngle(SetAngle),
+    #[br(magic(9u8))] Stufftext(NullString),
+    #[br(magic(10u8))] SetAngle([f32; 3]),
     #[br(magic(11u8))] ServerData(ServerData),
     #[br(magic(12u8))] Lightstyle(Lightstyle),
     #[br(magic(13u8))] NqUpdateName(NqUpdateName),
@@ -95,29 +96,29 @@ pub enum Message {
     #[br(magic(21u8))] FteSpawnStatic2,
     #[br(magic(22u8))] SpawnBaseline,
     #[br(magic(23u8))] TempEntity,
-    #[br(magic(24u8))] SetPause(SetPause),
-    #[br(magic(25u8))] NqSignonnum(NqSignonnum),
-    #[br(magic(26u8))] CenterPrint(CenterPrint),
+    #[br(magic(24u8))] SetPause(u8),
+    #[br(magic(25u8))] NqSignonnum(u8),
+    #[br(magic(26u8))] CenterPrint(NullString),
     #[br(magic(27u8))] Killedmonster,
     #[br(magic(28u8))] FoundSecret,
     #[br(magic(29u8))] SpawnStaticSound(SpawnStaticSound),
     #[br(magic(30u8))] Intermission(Intermission),
-    #[br(magic(31u8))] Finale(Finale),
-    #[br(magic(32u8))] CdTrack(CdTrack),
+    #[br(magic(31u8))] Finale(NullString),
+    #[br(magic(32u8))] CdTrack(u8),
     #[br(magic(33u8))] Sellscreen,
     #[br(magic(34u8))] Smallkick,
     #[br(magic(35u8))] Bigkick,
     #[br(magic(36u8))] UpdatePing(UpdatePing),
     #[br(magic(37u8))] UpdateEntertime(UpdateEntertime),
     #[br(magic(38u8))] UpdateStatLong(UpdateStatLong),
-    #[br(magic(39u8))] Muzzleflash(Muzzleflash),
+    #[br(magic(39u8))] Muzzleflash(u16),
     #[br(magic(40u8))] UpdateUserinfo(UpdateUserinfo),
     #[br(magic(41u8))] Download,
     #[br(magic(42u8))] Playerinfo,
     #[br(magic(43u8))] Nails,
     #[br(magic(44u8))] ChokeCount,
-    #[br(magic(45u8))] Modellist,
-    #[br(magic(46u8))] Soundlist,
+    #[br(magic(45u8))] Modellist(ModelList),
+    #[br(magic(46u8))] Soundlist(SoundList),
     #[br(magic(47u8))] Packetentities,
     #[br(magic(48u8))] Deltapacketentities,
     #[br(magic(49u8))] Maxspeed,
@@ -156,24 +157,6 @@ mod tests {
 
 #[derive(Debug, PartialEq, BinRead)]
 #[br(little)]
-pub struct CdTrack {
-    pub track: u8,
-}
-
-#[derive(Debug, PartialEq, BinRead)]
-#[br(little)]
-pub struct CenterPrint {
-    pub message: NullString,
-}
-
-#[derive(Debug, PartialEq, BinRead)]
-#[br(little)]
-pub struct Finale {
-    pub message: NullString,
-}
-
-#[derive(Debug, PartialEq, BinRead)]
-#[br(little)]
 pub struct Intermission {
     pub origin: [f32; 3],
     pub angle: [f32; 3],
@@ -188,30 +171,9 @@ pub struct Lightstyle {
 
 #[derive(Debug, PartialEq, BinRead)]
 #[br(little)]
-pub struct Muzzleflash {
-    pub entity: u16,
-}
-
-#[derive(Debug, PartialEq, BinRead)]
-#[br(little)]
-pub struct NqParticle {}
-
-#[derive(Debug, PartialEq, BinRead)]
-#[br(little)]
-pub struct NqSetview {
-    pub entity_number: u16,
-}
-
-#[derive(Debug, PartialEq, BinRead)]
-#[br(little)]
-pub struct NqSignonnum {
-    pub value: u8,
-}
-
-#[derive(Debug, PartialEq, BinRead)]
-#[br(little)]
-pub struct NqTime {
-    pub time: f32,
+pub struct ModelList {
+    #[br(parse_with = until_exclusive(|s: &NullString| s.is_empty()))]
+    pub filepaths: Vec<NullString>,
 }
 
 #[derive(Debug, PartialEq, BinRead)]
@@ -226,12 +188,6 @@ pub struct NqUpdateColors {
 pub struct NqUpdateName {
     pub player_number: u8,
     pub name: NullString,
-}
-
-#[derive(Debug, PartialEq, BinRead)]
-#[br(little)]
-pub struct NqVersion {
-    pub version: u32,
 }
 
 #[derive(Debug, PartialEq, BinRead)]
@@ -252,18 +208,6 @@ pub enum PrintId {
 
 #[derive(Debug, PartialEq, BinRead)]
 #[br(little)]
-pub struct SetAngle {
-    pub angle: [f32; 3],
-}
-
-#[derive(Debug, PartialEq, BinRead)]
-#[br(little)]
-pub struct SetPause {
-    pub value: u8,
-}
-
-#[derive(Debug, PartialEq, BinRead)]
-#[br(little)]
 pub struct Sound {
     pub entity_number: u16,
     pub sound_index: u8,
@@ -273,17 +217,18 @@ pub struct Sound {
 
 #[derive(Debug, PartialEq, BinRead)]
 #[br(little)]
+pub struct SoundList {
+    #[br(parse_with = until_exclusive(|s: &NullString| s.is_empty()))]
+    pub filepaths: Vec<NullString>,
+}
+
+#[derive(Debug, PartialEq, BinRead)]
+#[br(little)]
 pub struct SpawnStaticSound {
     pub origin: [f32; 3],
     pub sound_index: u8,
     pub volume: u8,
     pub attenuation: u8,
-}
-
-#[derive(Debug, PartialEq, BinRead)]
-#[br(little)]
-pub struct Stufftext {
-    pub message: NullString,
 }
 
 #[derive(Debug, PartialEq, BinRead)]

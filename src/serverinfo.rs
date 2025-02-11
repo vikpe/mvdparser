@@ -1,9 +1,8 @@
-use crate::qw::frame::Frame;
-use crate::qw::message::MessageType;
 use crate::qw::server_data::ServerData;
 use anyhow::Result;
 use binrw::BinRead;
 pub use quake_serverinfo::Settings;
+use quake_text::bytestr;
 use std::io::{Read, Seek};
 
 pub fn serverinfo<R>(r: &mut R) -> Result<Settings>
@@ -17,12 +16,8 @@ fn serverinfo_string<R>(r: &mut R) -> Result<String>
 where
     R: Read + Seek,
 {
-    Frame::read(r)?;
-    MessageType::read(r)?;
-    let data = ServerData::read(r)?;
-    // remove 'fullserverinfo "' and trailing "
-    let serverinfo_str = &data.serverinfo_str[16..data.serverinfo_str.len() - 2];
-    Ok(quake_text::bytestr::to_unicode(serverinfo_str))
+    r.seek_relative(7)?; // skip frame (6) and message type (1) bytes
+    Ok(bytestr::to_unicode(&ServerData::read(r)?.serverinfo.0))
 }
 
 #[cfg(test)]

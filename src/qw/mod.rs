@@ -5,4 +5,5 @@ pub mod frag_print;
 pub mod frame;
 pub mod hidden_message;
 pub mod message;
+pub mod protocol;
 pub mod server_data;

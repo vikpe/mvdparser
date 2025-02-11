@@ -21,6 +21,7 @@ include = [
 [dependencies]
 anyhow = "1.0.82"
 binrw = "0.14.1"
+bitflags = "2.8.0"
 bstr = "1.9.1"
 chrono = { version = "0.4.38", default-features = false }
 ktxstats = "0.5.0"

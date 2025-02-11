@@ -12,6 +12,12 @@ pub struct Frame {
     pub body_size: u32,
 }
 
+impl Frame {
+    pub fn is_empty(&self) -> bool {
+        self.body_size == 0
+    }
+}
+
 #[derive(Debug, BinRead)]
 #[br(little)]
 pub struct MultiFrameInfo {

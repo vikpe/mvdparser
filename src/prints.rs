@@ -11,11 +11,11 @@ where
 {
     let mut prints: Vec<Print> = Vec::new();
 
-    while let Ok(info) = Frame::read(r) {
+    while let Ok(frame) = Frame::read(r) {
         let current_pos = r.stream_position()?;
-        let next_frame_pos = current_pos + info.body_size as u64;
+        let next_frame_pos = current_pos + frame.body_size as u64;
 
-        if info.body_size == 0 {
+        if frame.is_empty() {
             r.seek(SeekFrom::Start(next_frame_pos))?;
             continue;
         }

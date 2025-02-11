@@ -27,7 +27,7 @@ where
         let current_pos = r.stream_position()?;
         let next_frame_pos = current_pos + frame.body_size as u64;
 
-        if frame.body_size == 0 || frame.command != Command::All {
+        if frame.is_empty() || frame.command != Command::All {
             r.seek(SeekFrom::Start(next_frame_pos))?;
             continue;
         }
