@@ -1,5 +1,5 @@
 use crate::pkg::ioextra;
-use anyhow::Result;
+
 use std::io::{Read, Seek};
 
 pub fn has_end_of_demo_marker<R>(r: &mut R) -> bool
@@ -19,6 +19,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use anyhow::Result;
     use std::fs::File;
 
     #[test]

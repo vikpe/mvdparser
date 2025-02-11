@@ -1,7 +1,6 @@
 use crate::pkg::ioextra::last_n;
 use crate::validate::has_end_of_demo_marker;
 use anyhow::Result;
-use binrw::BinRead;
 use bstr::ByteSlice;
 use std::io::{Read, Seek};
 

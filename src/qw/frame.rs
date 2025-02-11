@@ -1,14 +1,14 @@
 use crate::qw::hidden_message::HiddenMessage;
 use binrw::BinRead;
 
-#[derive(Debug, BinRead)]
+#[derive(Clone, Debug, BinRead)]
 #[br(little)]
 pub struct Frame {
     pub duration: u8,
     #[br(map = |x: u8| Command::from(x))]
     pub command: Command,
     #[br(if(command == Command::Multiple, None))]
-    pub to: Option<u32>,
+    pub target: Option<u32>,
     pub body_size: u32,
 }
 
@@ -25,7 +25,7 @@ pub struct MultiFrameInfo {
     pub hidden_message: HiddenMessage,
 }
 
-#[derive(Debug, PartialEq, BinRead)]
+#[derive(Clone, Debug, PartialEq, BinRead)]
 #[br(repr=u8)]
 pub enum Command {
     Cmd = 0,      // A user cmd movement message.
@@ -68,7 +68,7 @@ mod tests {
             let info = Frame::read(&mut Cursor::new([0, 6, 232, 1, 0, 0]))?;
             assert_eq!(info.duration, 0);
             assert_eq!(info.command, Command::All);
-            assert_eq!(info.to, None);
+            assert_eq!(info.target, None);
             assert_eq!(info.body_size, 488);
         }
         {
@@ -76,7 +76,7 @@ mod tests {
             let info = Frame::read(&mut Cursor::new([0, 3, 0, 0, 0, 0, 232, 1, 0, 0]))?;
             assert_eq!(info.duration, 0);
             assert_eq!(info.command, Command::Multiple);
-            assert_eq!(info.to, Some(0));
+            assert_eq!(info.target, Some(0));
             assert_eq!(info.body_size, 488);
         }
 

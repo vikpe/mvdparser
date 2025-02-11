@@ -24,8 +24,7 @@ where
     let mut result = Vec::new();
 
     while let Ok(frame) = Frame::read(r) {
-        let current_pos = r.stream_position()?;
-        let next_frame_pos = current_pos + frame.body_size as u64;
+        let next_frame_pos = r.stream_position()? + frame.body_size as u64;
 
         if frame.is_empty() || frame.command != Command::All {
             r.seek(SeekFrom::Start(next_frame_pos))?;
@@ -33,13 +32,10 @@ where
         }
 
         while let Ok(msg) = Message::read(r) {
-            match msg {
-                Message::UpdateUserinfo(update) => {
-                    if update.userinfo.starts_with(b"\\") {
-                        result.push(bytestr::to_unicode(&update.userinfo));
-                    }
+            if let Message::UpdateUserinfo(update) = msg {
+                if update.info.starts_with(b"\\") {
+                    result.push(bytestr::to_unicode(&update.info));
                 }
-                _ => {}
             }
         }
 
@@ -47,9 +43,7 @@ where
             return Ok(result);
         }
 
-        let current_pos = r.stream_position()?;
-
-        if current_pos != next_frame_pos {
+        if r.stream_position()? != next_frame_pos {
             r.seek(SeekFrom::Start(next_frame_pos))?;
         }
     }

@@ -1,3 +1,4 @@
+pub mod entity;
 pub mod flag_event;
 pub mod flag_print;
 pub mod frag_event;
@@ -5,5 +6,7 @@ pub mod frag_print;
 pub mod frame;
 pub mod hidden_message;
 pub mod message;
+pub mod playerinfo;
+pub mod primitives;
 pub mod protocol;
 pub mod server_data;

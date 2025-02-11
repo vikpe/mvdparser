@@ -20,7 +20,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pkg::ioextra::last_n;
     use anyhow::Result;
     use std::io::Cursor;
 
