@@ -66,13 +66,6 @@ impl Info {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct SliceInfo {
-    pub size: usize,
-    pub range_abs: Range<usize>,
-    // pub range_rel: Range<usize>,
-}
-
 #[cfg(test)]
 mod tests {
     use std::fs::read;
